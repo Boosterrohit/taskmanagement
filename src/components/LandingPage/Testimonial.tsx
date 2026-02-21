@@ -95,14 +95,7 @@ const rightSideStats = [
   },
 ]
 
-const benefits = [
-  'Capture tasks in under 2 seconds',
-  'Smart due date reminders',
-  'Collaborate with your team',
-  'Works on all your devices',
-  'Integrates with your tools',
-  '99.9% uptime guaranteed',
-]
+
 
 export function Testimonials() {
   const [current, setCurrent] = useState(0)

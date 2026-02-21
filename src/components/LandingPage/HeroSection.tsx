@@ -3,7 +3,6 @@
   import { GoldenParticles } from './GoldenParticles'
   import { Button } from '../ui/button'
   import { ArrowBigRight, Square, SquareCheck } from 'lucide-react'
-import { section } from 'framer-motion/client'
 
   const frameConfigs = [
     // Large statement frames
