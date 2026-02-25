@@ -2,7 +2,6 @@ import { List, Menu, Notebook, RefreshCcw, User2, X } from "lucide-react"
 import profile from "../../../assets/profile.png"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useState } from "react";
-import { Link } from "react-router-dom";
 interface HeaderProps {
   isSidebarOpen: boolean;
   toggleSidebar: () => void;

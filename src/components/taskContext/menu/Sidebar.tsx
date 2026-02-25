@@ -11,6 +11,7 @@ interface SidebarProps {
 const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   const location = useLocation();
   const [openSection, setOpenSection] = useState<string | null>(null);
+  
 
   useEffect(() => {
     SIDE_BAR_MENU.forEach((section) => {
@@ -31,7 +32,9 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
           onClick={onClose}
         />
       )}
-
+{openSection && (
+  <div></div>
+)}
     <div className={`fixed lg:static top-0 left-0 w-60 bg-white/70 backdrop-blur-md shadow-lg p-5  text-white flex flex-col h-screen z-50 transform transition-transform duration-300 ease-in-out ${
           isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         }`}>
