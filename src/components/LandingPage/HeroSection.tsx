@@ -3,6 +3,7 @@
   import { GoldenParticles } from './GoldenParticles'
   import { Button } from '../ui/button'
   import { ArrowBigRight, Square, SquareCheck } from 'lucide-react'
+  import { Link } from 'react-router-dom'
 
   const frameConfigs = [
     // Large statement frames
@@ -197,8 +198,9 @@
       </div>
 
         <div className='mt-3'>
-        <Button className='bg-[#155dfc] px-7 py-7 text-xl hover:bg-blue-500'>Get Started <ArrowBigRight/></Button>
-
+        <Link to="/my-task">
+          <Button className='bg-[#155dfc] px-7 py-7 text-xl hover:bg-blue-500'>Get Started <ArrowBigRight/></Button>
+        </Link>
       </div>
       </div>
       

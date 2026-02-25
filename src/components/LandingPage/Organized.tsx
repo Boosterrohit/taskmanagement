@@ -10,7 +10,7 @@ const benefits = [
 
 export function CTA() {
   return (
-    <section className=" py-24 work_background overflow-hidden">
+    <section className=" py-24 overflow-hidden">
       {/* Decorative background */}
 
       <div className="relative z-10 max-w-4xl mx-auto md:px-6 px-2 text-center">
@@ -69,7 +69,7 @@ export function CTA() {
             transition={{ duration: 0.5, delay: 0.4 }}
           >
             <Link
-              to="/sign-up"
+              to="/my-task"
               className="group inline-flex items-center justify-center gap-2 bg-blue-600 text-white font-semibold px-10 py-4 rounded-lg hover:bg-blue-700 transition-all duration-200 shadow-lg hover:shadow-xl"
             >
               Get started free

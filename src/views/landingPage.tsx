@@ -3,6 +3,7 @@ import { HeroSection } from "../components/LandingPage/HeroSection";
 import Work from "@/components/LandingPage/Work";
 import { Testimonials } from "@/components/LandingPage/Testimonial";
 import { CTA } from "@/components/LandingPage/Organized";
+import { Team } from "@/components/LandingPage/Team";
 import { Footer } from "@/components/LandingPage/Footer";
 
 const LandingPage = () => {
@@ -13,6 +14,7 @@ const LandingPage = () => {
         <Feature />
         <Work />
         <Testimonials />
+        <Team />
         <CTA/>
         <Footer/>
       </div>
