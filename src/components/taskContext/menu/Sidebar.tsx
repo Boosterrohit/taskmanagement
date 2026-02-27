@@ -1,7 +1,7 @@
 import { Plus } from "lucide-react"
 import { SIDE_BAR_MENU } from "@/data"
 import profile from "../../../assets/profile.png"
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 interface SidebarProps {
   isOpen: boolean;
@@ -59,8 +59,10 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                   {item.SUBMENU.map((link) => {
                     return(
                       <li key={link.id} className="text-gray-700 px-2 text-sm leading-7 hover:text-blue-500 cursor-pointer transition-colors flex items-center gap-2">
+                        <Link to={link.slug} className="flex items-center gap-1">
                           {link.icon && <link.icon className="w-4 h-4" />}
                         {link.name}
+                        </Link>
                       </li>
                     )
                 })}

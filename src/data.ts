@@ -48,13 +48,13 @@ export const SIDE_BAR_MENU = [
             {
                 id:1,
                 name: "My Day",
-                slug: "my-day",
+                slug: "/my-task",
                 icon: Shell
             },
             {
                 id:2,
                 name: "All My Tasks",
-                slug: "all-my-tasks",
+                slug: "/all-tasks",
                 icon: NotepadText,
             },
             {
