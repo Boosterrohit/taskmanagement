@@ -60,7 +60,7 @@ export const SIDE_BAR_MENU = [
             {
                 id:3,
                 name: "My Calender",
-                slug: "my-calender",
+                slug: "/calendar",
                 icon: Calendar,
             },
             
@@ -97,7 +97,7 @@ export const SIDE_BAR_MENU = [
             {
                 id:8,
                 name: "Calendar",
-                slug: "board-calendar",
+                slug: "/calendar",
                 icon: Calendar,
             },
         ]

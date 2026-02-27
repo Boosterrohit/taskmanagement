@@ -2,7 +2,7 @@ import { List, Menu, Notebook, RefreshCcw, User2, X } from "lucide-react"
 import profile from "../../../assets/profile.png"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useSearchParams } from "react-router-dom";
 interface HeaderProps {
   isSidebarOpen: boolean;
   toggleSidebar: () => void;
@@ -10,10 +10,11 @@ interface HeaderProps {
 const pageTitles: Record<string, string> = {
   "/my-day": "My Day",
   "/all-tasks": "All My Tasks",
-  "/my-calendar": "My Calendar",
+  "/calendar": "My Calendar",
   // add your other routes here
 };
 const Header = ({ isSidebarOpen, toggleSidebar }: HeaderProps) => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const { pathname } = useLocation();
   const title = pageTitles[pathname] || "My Tasks";
   const [isRotating, setIsRotating] = useState(false);
@@ -39,12 +40,14 @@ const Header = ({ isSidebarOpen, toggleSidebar }: HeaderProps) => {
 <div className="flex items-center gap-1 text-gray-700">
   <Notebook size={20}/>
 {/* <p className="md:flex hidden text-lg font-bold">All My Tasks</p> */}
-<p className="flex  text-lg font-bold">{title}</p>
+{/* <p className="flex  text-lg font-bold">{title}</p> */}
+<p className={`text-lg font-bold ${title === "All My Tasks" ? "hidden md:flex" : "flex"}`}>{title}</p>
 </div>
 <div className="bg-gray-300 h-8 w-[1px] mx-2"></div>
 {title === "All My Tasks" && (
 <div className="">
-  <Tabs defaultValue="overview" className="w-full">
+  <Tabs defaultValue={searchParams.get("tab") || "overview"}
+  onValueChange={(val) => setSearchParams({ tab: val })} className="w-full">
       <TabsList className="bg-white">
         <TabsTrigger value="overview" className="text-xs flex gap-1 items-center"><List size={10}/>My Lists</TabsTrigger>
         <TabsTrigger value="analytics" className="text-xs flex gap-1 items-center"><User2 size={12}/>Rohit</TabsTrigger>
