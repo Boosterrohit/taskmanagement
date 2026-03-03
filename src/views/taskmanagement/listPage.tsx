@@ -3,12 +3,11 @@ import {
   Trash2,
   Bell,
   Tag,
-  Paperclip,
   ClipboardList,
   Lock,
   ChevronRight,
 } from "lucide-react";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 
 type Subtask = { id: string; text: string; completed: boolean };
 
