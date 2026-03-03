@@ -122,11 +122,11 @@ const ListPage = ({ title }: ListPageProps) => {
   }, [title]);
 
   return (
-    <section className="h-[85vh] flex">
+    <section className="h-[85vh] flex items-center gap-4 ">
       {/* left list pane */}
-      <div className="w-1/3 border-r overflow-y-auto p-4 bg-white shadow-lg">
+      <div className="w-full border-r overflow-y-auto p-4 relative bg-white shadow-lg rounded-lg h-[500px]">
         <h1 className="text-2xl font-bold mb-4">{title}</h1>
-        <ul className="space-y-2">
+        <ul className="space-y-2 hide-scrollbar h-[300px] rounded-lg p-2 overflow-y-auto">
           {activeTasks.map((task) => (
             <li
               key={task.id}
@@ -157,8 +157,7 @@ const ListPage = ({ title }: ListPageProps) => {
               />
             </li>
           ))}
-        </ul>
-        {completedTasks.length > 0 && (
+          {completedTasks.length > 0 && (
           <div className="mt-6">
             <h2 className="text-xl font-semibold">Completed</h2>
             <ul className="space-y-2 mt-2">
@@ -179,10 +178,12 @@ const ListPage = ({ title }: ListPageProps) => {
             </ul>
           </div>
         )}
+        </ul>
+        
 
         {/* add input */}
-        <div className="mt-4 sticky bottom-0 bg-white py-2">
-          <div className="flex items-center gap-2">
+        <div className="bottom-4 bg-white border absolute pl-3 pr-3 left-1/2 -translate-x-1/2 w-[90%] py-2 rounded-xl">
+          <div className="flex items-center justify-between gap-2">
             <input
               type="text"
               placeholder="Add task..."
@@ -191,12 +192,7 @@ const ListPage = ({ title }: ListPageProps) => {
               className="flex-1 rounded-full border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               onKeyDown={(e) => e.key === "Enter" && handleAdd()}
             />
-            <input
-              type="date"
-              value={inputDate}
-              onChange={(e) => setInputDate(e.target.value)}
-              className="h-10 text-sm border rounded-full px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 text-gray-500 cursor-pointer"
-            />
+          
             <button
               onClick={handleAdd}
               className="bg-blue-500 text-white px-4 py-2 rounded-full hover:bg-blue-600 flex items-center"
@@ -204,13 +200,19 @@ const ListPage = ({ title }: ListPageProps) => {
               <Plus size={20} />
             </button>
           </div>
+            <input
+              type="date"
+              value={inputDate}
+              onChange={(e) => setInputDate(e.target.value)}
+              className="h-10 w-full mt-2 text-sm border rounded-full px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 text-gray-500 cursor-pointer"
+            />
         </div>
       </div>
 
       {/* right detail pane */}
-      <div className="flex-1 p-6 overflow-y-auto">
+      <div className="w-full px-1 py-5 overflow-y-scroll hide-scrollbar rounded-lg shadow-lg border h-[500px] bg-white flex justify-center ">
         {selectedTask ? (
-          <div className="bg-white rounded-lg shadow-lg p-6">
+          <div className="mb-4">
             <div className="mb-3 text-sm text-gray-500 flex items-center gap-1">
               <Lock size={14} /> My lists <ChevronRight size={14} /> {title}
             </div>
@@ -243,7 +245,7 @@ const ListPage = ({ title }: ListPageProps) => {
                 placeholder="Insert your notes here"
               />
             </div>
-            <div className="mt-6">
+            <div className="mt-6 py-5">
               <h3 className="font-semibold mb-1">
                 Subtasks {" "}
                 <span className="text-sm text-gray-500">
@@ -281,12 +283,7 @@ const ListPage = ({ title }: ListPageProps) => {
                 </button>
               </div>
             </div>
-            <div className="mt-6">
-              <h3 className="font-semibold mb-1">Attachments</h3>
-              <div className="border-2 border-dashed rounded-lg p-6 text-center text-gray-400">
-                <Paperclip size={20} /> Click to add / drop your files here
-              </div>
-            </div>
+            
           </div>
         ) : (
           <p className="text-gray-500">Select a task to see details</p>

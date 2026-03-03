@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { useBoard } from "@/contexts/boardContext";
 import type { BoardTask } from "@/contexts/boardContext";
@@ -6,8 +6,25 @@ import { Plus, Trash2 } from "lucide-react";
 
 const BoardPage = () => {
   const { boardId } = useParams<{ boardId: string }>();
-  const { boards, renameBoard, addColumn, renameColumn, deleteColumn, addTask, deleteTask } = useBoard();
+  const { boards, renameBoard, addColumn, renameColumn, deleteColumn, addTask, deleteTask, moveTask } = useBoard();
   const board = boards.find((b) => b.id === boardId);
+
+  // drag-drop state
+  const dragItem = useRef<{ columnId: string; task: BoardTask } | null>(null);
+  const [dragOverCol, setDragOverCol] = useState<string | null>(null);
+
+  const handleDragStart = (task: BoardTask, from: string) => {
+    dragItem.current = { columnId: from, task };
+  };
+
+  const handleDrop = (to: string) => {
+    if (!dragItem.current) return;
+    const { columnId, task } = dragItem.current;
+    if (columnId === to) return;
+    moveTask(board!.id, columnId, to, task);
+    dragItem.current = null;
+    setDragOverCol(null);
+  };
   const [newName, setNewName] = useState(board?.name || "");
 
   React.useEffect(() => {
@@ -41,24 +58,31 @@ const BoardPage = () => {
   const [taskColumn, setTaskColumn] = React.useState<string | null>(null);
   const [taskText, setTaskText] = React.useState("");
   const [taskDate, setTaskDate] = React.useState("");
-  const [taskEmail, setTaskEmail] = React.useState("");
+  const [taskEmails, setTaskEmails] = React.useState(""); // comma separated string
+  const [taskStatus, setTaskStatus] = React.useState<"Pending" | "Urgent" | "Medium" | "Complete" | "In Progress" | "" >("");
 
   const handleAddTask = (colId: string) => {
     setTaskColumn(colId);
     setTaskText("");
     setTaskDate("");
-    setTaskEmail("");
+    setTaskEmails("");
+    setTaskStatus("");
     setShowTaskDialog(true);
   };
   const confirmAddTask = () => {
     if (!taskColumn) return;
     const text = taskText.trim();
     if (!text) return;
+    const emails = taskEmails
+      .split(",")
+      .map((e) => e.trim())
+      .filter(Boolean);
     const task: BoardTask = {
       id: `${Date.now()}`,
       text,
       date: taskDate,
-      assigneeEmail: taskEmail,
+      assigneeEmails: emails,
+      status: taskStatus || undefined,
     };
     addTask(board.id, taskColumn, task);
     setShowTaskDialog(false);
@@ -115,12 +139,24 @@ const BoardPage = () => {
               className="w-full border px-3 py-2 rounded mb-2"
             />
             <input
-              type="email"
-              value={taskEmail}
-              onChange={(e) => setTaskEmail(e.target.value)}
-              className="w-full border px-3 py-2 rounded mb-4"
-              placeholder="Assignee email"
+              type="text"
+              value={taskEmails}
+              onChange={(e) => setTaskEmails(e.target.value)}
+              className="w-full border px-3 py-2 rounded mb-2"
+              placeholder="Assignee emails (comma separated)"
             />
+            <select
+              value={taskStatus}
+              onChange={(e) => setTaskStatus(e.target.value as any)}
+              className="w-full border px-3 py-2 rounded mb-4"
+            >
+              <option value="">Status</option>
+              <option value="Pending">Pending</option>
+              <option value="Urgent">Urgent</option>
+              <option value="Medium">Medium</option>
+              <option value="Complete">Complete</option>
+              <option value="In Progress">In Progress</option>
+            </select>
             <div className="flex justify-end gap-2">
               <button
                 className="px-4 py-2 rounded bg-gray-200"
@@ -140,21 +176,26 @@ const BoardPage = () => {
       )}
 
       <div className="space-y-4">
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 rounded-lg shadow-md border bg-white p-5">
         <input
           type="text"
           value={newName}
           onChange={(e) => setNewName(e.target.value)}
           onBlur={handleRename}
-          className="text-2xl font-bold border-b border-gray-300 focus:outline-none"
+          className="text-2xl font-bold border-b border-gray-300 focus:outline-none w-full bg-transparent"
         />
       </div>
 
-      <div className="flex gap-4 overflow-x-auto pb-4">
+      <div className="flex gap-4 overflow-x-auto hide-scrollbar pb-4">
         {board.columns.map((col) => (
           <div
             key={col.id}
-            className="bg-white p-4 rounded-lg shadow-md w-64 flex-shrink-0"
+            onDragOver={(e) => { e.preventDefault(); setDragOverCol(col.id); }}
+            onDragLeave={() => setDragOverCol(null)}
+            onDrop={() => handleDrop(col.id)}
+            className={`bg-white p-4 rounded-lg shadow-md w-64 flex-shrink-0 transition-colors duration-200 ${
+              dragOverCol === col.id ? "bg-blue-50" : ""
+            }`}
           >
             <div className="flex items-center justify-between mb-2">
               <h3
@@ -175,28 +216,40 @@ const BoardPage = () => {
                 }}
               />
             </div>
-            <ul className="space-y-2">
+            <ul className="space-y-2 bg-transparent">
               {col.tasks.map((task) => (
                 <li
                   key={task.id}
-                  className="bg-white p-2 rounded shadow-sm flex flex-col relative"
+                  draggable
+                  onDragStart={() => handleDragStart(task, col.id)}
+                  className="bg-white p-2 border  rounded shadow-sm flex flex-col relative"
                 >
                   <Trash2
                     size={12}
                     className="absolute top-1 right-1 text-gray-400 hover:text-red-500 cursor-pointer"
                     onClick={() => deleteTask(board.id, col.id, task.id)}
                   />
-                  <span>{task.text}</span>
+                  {task.status && (
+                    <span className="absolute top-1 left-1 text-[10px] px-1 py-0.5 rounded bg-yellow-200 text-yellow-800">
+                      {task.status}
+                    </span>
+                  )}
+                  <span className="mt-4">{task.text}</span>
                   {task.date && (
                     <span className="text-xs text-red-500">{task.date}</span>
                   )}
-                  {task.assigneeEmail && (
-                    <div className="mt-1 flex items-center gap-2">
-                      <div className="w-5 h-5 bg-blue-500 text-white rounded-full flex items-center justify-center text-[10px]">
-                        {task.assigneeEmail.charAt(0).toUpperCase()}
-                      </div>
+                  {task.assigneeEmails && task.assigneeEmails.length > 0 && (
+                    <div className="mt-1 flex items-center gap-1">
+                      {task.assigneeEmails.map((email) => (
+                        <div
+                          key={email}
+                          className="w-5 h-5 bg-blue-500 text-white rounded-full flex items-center justify-center text-[10px]"
+                        >
+                          {email.charAt(0).toUpperCase()}
+                        </div>
+                      ))}
                       <span className="text-xs text-gray-400">
-                        {task.assigneeEmail}
+                        {task.assigneeEmails.join(", ")}
                       </span>
                     </div>
                   )}
@@ -205,9 +258,9 @@ const BoardPage = () => {
             </ul>
             <button
               onClick={() => handleAddTask(col.id)}
-              className="mt-3 text-sm text-gray-500 flex items-center gap-1"
+              className="mt-3 text-sm p-2 bg-blue-500 text-white rounded-lg w-full justify-center flex items-center gap-1"
             >
-              <Plus size={14} /> Add Task
+              <Plus size={14} /> Add Tasks
             </button>
           </div>
         ))}
@@ -215,7 +268,7 @@ const BoardPage = () => {
         <div className="w-64 flex-shrink-0 flex items-center justify-center">
           <button
             onClick={handleAddColumn}
-            className="text-gray-500 flex items-center gap-1 p-3 rounded-lg hover:bg-gray-100"
+            className="text-gray-500 shadow-lg items-center gap-1 p-3 border h-20 w-60 flex justify-center  font-bold rounded-lg bg-white hover:bg-gray-100"
           >
             <Plus size={18} /> Add section
           </button>

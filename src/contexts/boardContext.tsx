@@ -4,7 +4,8 @@ export type BoardTask = {
   id: string;
   text: string;
   date?: string;
-  assigneeEmail?: string;
+  assigneeEmails?: string[]; // support multiple emails
+  status?: "Pending" | "Urgent" | "Medium" | "Complete" | "In Progress";
 };
 
 export type BoardColumn = {
@@ -28,6 +29,12 @@ interface BoardContextType {
   deleteColumn: (boardId: string, columnId: string) => void;
   addTask: (boardId: string, columnId: string, task: BoardTask) => void;
   deleteTask: (boardId: string, columnId: string, taskId: string) => void;
+  moveTask: (
+    boardId: string,
+    fromColumnId: string,
+    toColumnId: string,
+    task: BoardTask
+  ) => void;
 }
 
 const BoardContext = createContext<BoardContextType | undefined>(undefined);
@@ -124,9 +131,46 @@ export const BoardProvider = ({ children }: { children: React.ReactNode }) => {
     );
   };
 
+  const moveTask = (
+    boardId: string,
+    fromColumnId: string,
+    toColumnId: string,
+    task: BoardTask
+  ) => {
+    setBoards((prev) =>
+      prev.map((b) => {
+        if (b.id !== boardId) return b;
+        // remove from source
+        const newCols = b.columns.map((c) => {
+          if (c.id === fromColumnId) {
+            return { ...c, tasks: c.tasks.filter((t) => t.id !== task.id) };
+          }
+          return c;
+        });
+        // add to destination
+        return {
+          ...b,
+          columns: newCols.map((c) =>
+            c.id === toColumnId ? { ...c, tasks: [...c.tasks, task] } : c
+          ),
+        };
+      })
+    );
+  };
+
   return (
     <BoardContext.Provider
-      value={{ boards, addBoard, renameBoard, addColumn, renameColumn, deleteColumn, addTask, deleteTask }}
+      value={{
+        boards,
+        addBoard,
+        renameBoard,
+        addColumn,
+        renameColumn,
+        deleteColumn,
+        addTask,
+        deleteTask,
+        moveTask,
+      }}
     >
       {children}
     </BoardContext.Provider>

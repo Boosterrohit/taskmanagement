@@ -14,12 +14,16 @@ const pageTitles: Record<string, string> = {
   "/personal": "Personal",
   "/work": "Work",
   "/groceries": "Groceries",
-  // add your other routes here
+  // dynamic board route handled in code above
 };
 const Header = ({ isSidebarOpen, toggleSidebar }: HeaderProps) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { pathname } = useLocation();
-  const title = pageTitles[pathname] || "My Tasks";
+  let title = pageTitles[pathname] || "My Tasks";
+  // handle dynamic board route
+  if (pathname.startsWith("/board/")) {
+    title = "Board";
+  }
   const [isRotating, setIsRotating] = useState(false);
  const handleRefresh = () => {
   setIsRotating(true);

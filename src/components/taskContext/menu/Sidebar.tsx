@@ -15,7 +15,8 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   const navigate = useNavigate();
   const { boards, addBoard } = useBoard();
   const [openSection, setOpenSection] = useState<string | null>(null);
-  
+  const [showBoardDialog, setShowBoardDialog] = useState(false);
+  const [newBoardName, setNewBoardName] = useState("");
 
   useEffect(() => {
     SIDE_BAR_MENU.forEach((section) => {
@@ -33,11 +34,15 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   }, [location.pathname]);
 
   const handleAddBoard = () => {
-    const name = prompt("Enter board name");
-    if (name && name.trim()) {
-      const newBoard = addBoard(name.trim());
+    setNewBoardName("");
+    setShowBoardDialog(true);
+  };
+  const confirmAddBoard = () => {
+    if (newBoardName.trim()) {
+      const newBoard = addBoard(newBoardName.trim());
       navigate(`/board/${newBoard.id}`);
     }
+    setShowBoardDialog(false);
   };
 
   return (
@@ -51,6 +56,36 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
 {openSection && (
   <div></div>
 )}
+
+      {/* board dialog */}
+      {showBoardDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg w-80">
+            <h2 className="text-lg font-semibold mb-2">New Board</h2>
+            <input
+              type="text"
+              value={newBoardName}
+              onChange={(e) => setNewBoardName(e.target.value)}
+              className="w-full border px-3 py-2 rounded mb-4"
+              placeholder="Board name"
+            />
+            <div className="flex justify-end gap-2">
+              <button
+                className="px-4 py-2 rounded bg-gray-200"
+                onClick={() => setShowBoardDialog(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="px-4 py-2 rounded bg-blue-500 text-white"
+                onClick={confirmAddBoard}
+              >
+                Add
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     <div className={`fixed lg:static top-0 left-0 w-60 bg-white/70 backdrop-blur-md shadow-lg p-5  text-white flex flex-col h-screen z-50 transform transition-transform duration-300 ease-in-out ${
           isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         }`}>
