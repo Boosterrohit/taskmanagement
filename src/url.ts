@@ -3,5 +3,8 @@ export const appUrls = {
     myTask: '/my-task',
     // taskContext: '/task-management',
     allTasks: '/all-tasks',
-    calendar: '/calendar'
+    calendar: '/calendar',
+    personal: '/personal',
+    work: '/work',
+    groceries: '/groceries',
 }

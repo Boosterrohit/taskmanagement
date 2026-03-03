@@ -1,8 +1,10 @@
 import { Plus } from "lucide-react"
 import { SIDE_BAR_MENU } from "@/data"
 import profile from "../../../assets/profile.png"
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { useBoard } from "@/contexts/boardContext";
+
 interface SidebarProps {
   isOpen: boolean;
   onClose: () => void;
@@ -10,19 +12,33 @@ interface SidebarProps {
 
 const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { boards, addBoard } = useBoard();
   const [openSection, setOpenSection] = useState<string | null>(null);
   
 
   useEffect(() => {
     SIDE_BAR_MENU.forEach((section) => {
-      const hasActiveItem = section.SUBMENU.some(
-        (item) => location.pathname === `/dashboard${item.slug}`
-      );
+      const hasActiveItem = section.SUBMENU.some((item) => {
+        // support both root paths and legacy /dashboard prefix
+        return (
+          location.pathname === item.slug ||
+          location.pathname === `/dashboard${item.slug}`
+        );
+      });
       if (hasActiveItem) {
         setOpenSection(section.title);
       }
     });
   }, [location.pathname]);
+
+  const handleAddBoard = () => {
+    const name = prompt("Enter board name");
+    if (name && name.trim()) {
+      const newBoard = addBoard(name.trim());
+      navigate(`/board/${newBoard.id}`);
+    }
+  };
 
   return (
     <>
@@ -65,13 +81,19 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                         </Link>
                       </li>
                     )
-                })}
+                  })}
+                  {/* if section is Boards, insert dynamic boards links */}
+                  {item.title === "Boards" && boards.map((b) => (
+                    <li key={b.id} className="text-gray-700 px-2 text-sm leading-7 hover:text-blue-500 cursor-pointer transition-colors flex items-center gap-2">
+                      <Link to={`/board/${b.id}`}>{b.name}</Link>
+                    </li>
+                  ))}
                 </ul>
               </div>
             )
           })}
         </div>
-        <div className="text-black absolute bottom-5 border cursor-pointer w-52 left-4 text-sm flex justify-between bg-white shadow-md px-3 py-2 rounded-full items-center gap-2">
+        <div onClick={handleAddBoard} className="text-black absolute bottom-5 border cursor-pointer w-52 left-4 text-sm flex justify-between bg-white shadow-md px-3 py-2 rounded-full items-center gap-2">
          <div className="flex">
            <div className="bg-red-400 -mr-2 border-2 border-gray-300 w-8 h-8 rounded-full flex justify-center items-center text-base text-white">R</div>
           <div className="bg-green-400 -mr-2 border-2 border-gray-300 w-8 h-8 rounded-full flex justify-center items-center text-base text-white">A</div>

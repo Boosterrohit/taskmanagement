@@ -11,6 +11,9 @@ const pageTitles: Record<string, string> = {
   "/my-day": "My Day",
   "/all-tasks": "All My Tasks",
   "/calendar": "My Calendar",
+  "/personal": "Personal",
+  "/work": "Work",
+  "/groceries": "Groceries",
   // add your other routes here
 };
 const Header = ({ isSidebarOpen, toggleSidebar }: HeaderProps) => {

@@ -73,19 +73,19 @@ export const SIDE_BAR_MENU = [
             {
                 id:5,
                 name: "Personal",
-                slug: "personal",
+                slug: "/personal",
                 icon: FileUser,
             },
             {
                 id:6,
                 name: "Work",
-                slug: "work",
+                slug: "/work",
                 icon: Workflow
             },
             {
                 id:7,
                 name: "Groceries",
-                slug: "groceries",
+                slug: "/groceries",
                 icon: ShoppingBag
             }
         ]
