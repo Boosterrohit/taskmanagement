@@ -4,6 +4,7 @@ import profile from "../../../assets/profile.png";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useMemo, useState } from "react";
 import { useBoard } from "@/contexts/boardContext";
+import { useToast } from "@/contexts/toastContext";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -13,6 +14,7 @@ interface SidebarProps {
 const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { showSuccess, showError } = useToast();
   const { boards, addBoard } = useBoard();
   const [showBoardDialog, setShowBoardDialog] = useState(false);
   const [newBoardName, setNewBoardName] = useState("");
@@ -33,12 +35,16 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     if (!trimmed) return;
 
     setIsAddingBoard(true);
-    if (newBoardName.trim()) {
+    try {
       const newBoard = await addBoard(trimmed);
       navigate(`/board/${newBoard.id}`);
+      showSuccess("Board added");
+    } catch {
+      showError("Failed to add board");
+    } finally {
+      setIsAddingBoard(false);
+      setShowBoardDialog(false);
     }
-    setIsAddingBoard(false);
-    setShowBoardDialog(false);
   };
 
   const isMenuActive = (slug: string) => {

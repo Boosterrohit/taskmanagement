@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTasks } from "@/contexts/taskContext";
+import { useToast } from "@/contexts/toastContext";
 import type { TaskListType, TaskSubtask } from "@/types/task";
 
 interface ListPageProps {
@@ -24,6 +25,7 @@ const listTypeByTitle: Record<string, TaskListType> = {
 
 const ListPage = ({ title }: ListPageProps) => {
   const { getTasksByListType, addTask, updateTask, deleteTask, toggleComplete } = useTasks();
+  const { showSuccess, showError } = useToast();
   const listType = listTypeByTitle[title] || "personal";
 
   const tasks = getTasksByListType(listType);
@@ -55,21 +57,26 @@ const ListPage = ({ title }: ListPageProps) => {
     if (!text) return;
 
     setIsAddingTask(true);
+    try {
+      const newTask = await addTask({
+        title: text,
+        listType,
+        dueDate: inputDate || null,
+        completed: false,
+        notes: "",
+        subtasks: [],
+        bucket: null,
+      });
 
-    const newTask = await addTask({
-      title: text,
-      listType,
-      dueDate: inputDate || null,
-      completed: false,
-      notes: "",
-      subtasks: [],
-      bucket: null,
-    });
-
-    setIsAddingTask(false);
-    setInputText("");
-    setInputDate("");
-    setSelectedId(newTask.id);
+      setInputText("");
+      setInputDate("");
+      setSelectedId(newTask.id);
+      showSuccess("Task added");
+    } catch {
+      showError("Failed to add task");
+    } finally {
+      setIsAddingTask(false);
+    }
   };
 
   const editTaskTitle = (id: string, currentTitle: string, currentDueDate: string | null) => {
@@ -81,9 +88,25 @@ const ListPage = ({ title }: ListPageProps) => {
     const trimmed = editTask.title.trim();
     if (!trimmed) return;
     setIsSavingEdit(true);
-    await updateTask(editTask.id, { title: trimmed, dueDate: editTask.dueDate || null });
-    setIsSavingEdit(false);
-    setEditTask(null);
+    try {
+      await updateTask(editTask.id, { title: trimmed, dueDate: editTask.dueDate || null });
+      setEditTask(null);
+      showSuccess("Task updated");
+    } catch {
+      showError("Failed to update task");
+    } finally {
+      setIsSavingEdit(false);
+    }
+  };
+
+  const handleDeleteTask = async (id: string) => {
+    try {
+      await deleteTask(id);
+      if (selectedId === id) setSelectedId(null);
+      showSuccess("Task deleted");
+    } catch {
+      showError("Failed to delete task");
+    }
   };
 
   const addSubtask = async (taskId: string) => {
@@ -178,8 +201,7 @@ const ListPage = ({ title }: ListPageProps) => {
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    deleteTask(task.id);
-                    if (selectedId === task.id) setSelectedId(null);
+                    handleDeleteTask(task.id);
                   }}
                 >
                   <Trash2 size={18} color="red" className="opacity-60 hover:opacity-100" />
@@ -199,7 +221,7 @@ const ListPage = ({ title }: ListPageProps) => {
                       </button>
                       <del className="text-gray-500">{task.title}</del>
                     </div>
-                    <button onClick={() => deleteTask(task.id)}>
+                    <button onClick={() => handleDeleteTask(task.id)}>
                       <Trash2 size={18} color="red" className="opacity-60 hover:opacity-100" />
                     </button>
                   </li>

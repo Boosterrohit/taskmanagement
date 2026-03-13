@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { useTasks } from "@/contexts/taskContext";
+import { useToast } from "@/contexts/toastContext";
 import type { TaskBucket } from "@/types/task";
 import { ChevronRight, Lock, Plus, SquarePen, Trash2, User2 } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
@@ -15,6 +16,7 @@ const columns: Array<{ key: TaskBucket; title: string; day: string }> = [
 const AllTasks = () => {
   const [searchParams] = useSearchParams();
   const activeTab = searchParams.get("tab") || "overview";
+  const { showSuccess, showError } = useToast();
 
   const { getTasksByListType, addTask, updateTask, deleteTask, toggleComplete, loading } = useTasks();
   const listTasks = getTasksByListType("all-tasks");
@@ -66,18 +68,23 @@ const AllTasks = () => {
     if (!title) return;
 
     setIsAddingOverview(true);
+    try {
+      const created = await addTask({
+        title,
+        listType: "all-tasks",
+        dueDate: inputDate || null,
+        bucket: "today",
+      });
 
-    const created = await addTask({
-      title,
-      listType: "all-tasks",
-      dueDate: inputDate || null,
-      bucket: "today",
-    });
-
-    setIsAddingOverview(false);
-    setInputTitle("");
-    setInputDate("");
-    setSelectedId(created.id);
+      setInputTitle("");
+      setInputDate("");
+      setSelectedId(created.id);
+      showSuccess("Task added");
+    } catch {
+      showError("Failed to add task");
+    } finally {
+      setIsAddingOverview(false);
+    }
   };
 
   const addBucketTask = async (bucket: TaskBucket) => {
@@ -85,17 +92,22 @@ const AllTasks = () => {
     if (!title) return;
 
     setAddingBucket(bucket);
+    try {
+      await addTask({
+        title,
+        listType: "all-tasks",
+        dueDate: dateByBucket[bucket] || null,
+        bucket,
+      });
 
-    await addTask({
-      title,
-      listType: "all-tasks",
-      dueDate: dateByBucket[bucket] || null,
-      bucket,
-    });
-
-    setAddingBucket(null);
-    setInputByBucket((prev) => ({ ...prev, [bucket]: "" }));
-    setDateByBucket((prev) => ({ ...prev, [bucket]: "" }));
+      setInputByBucket((prev) => ({ ...prev, [bucket]: "" }));
+      setDateByBucket((prev) => ({ ...prev, [bucket]: "" }));
+      showSuccess("Task added");
+    } catch {
+      showError("Failed to add task");
+    } finally {
+      setAddingBucket(null);
+    }
   };
 
   const editTitle = async (id: string, currentTitle: string, currentDueDate: string | null) => {
@@ -107,9 +119,25 @@ const AllTasks = () => {
     const trimmed = editTask.title.trim();
     if (!trimmed) return;
     setIsSavingEdit(true);
-    await updateTask(editTask.id, { title: trimmed, dueDate: editTask.dueDate || null });
-    setIsSavingEdit(false);
-    setEditTask(null);
+    try {
+      await updateTask(editTask.id, { title: trimmed, dueDate: editTask.dueDate || null });
+      setEditTask(null);
+      showSuccess("Task updated");
+    } catch {
+      showError("Failed to update task");
+    } finally {
+      setIsSavingEdit(false);
+    }
+  };
+
+  const handleDeleteTask = async (id: string) => {
+    try {
+      await deleteTask(id);
+      if (selectedId === id) setSelectedId(null);
+      showSuccess("Task deleted");
+    } catch {
+      showError("Failed to delete task");
+    }
   };
 
   const onDragStart = (id: string, from: TaskBucket) => {
@@ -197,7 +225,7 @@ const AllTasks = () => {
                           <button onClick={(e) => { e.stopPropagation(); editTitle(task.id, task.title, task.dueDate); }}>
                             <SquarePen size={15} className="text-blue-600" />
                           </button>
-                          <button onClick={(e) => { e.stopPropagation(); deleteTask(task.id); if (selectedId === task.id) setSelectedId(null); }}>
+                          <button onClick={(e) => { e.stopPropagation(); handleDeleteTask(task.id); }}>
                             <Trash2 size={16} color="red" />
                           </button>
                         </div>
@@ -254,7 +282,7 @@ const AllTasks = () => {
                     <button onClick={() => editTitle(selectedTask.id, selectedTask.title, selectedTask.dueDate)}>
                       <SquarePen size={16} className="text-blue-600" />
                     </button>
-                    <button onClick={() => { deleteTask(selectedTask.id); setSelectedId(null); }}>
+                    <button onClick={() => handleDeleteTask(selectedTask.id)}>
                       <Trash2 size={18} color="red" />
                     </button>
                   </div>
@@ -343,7 +371,7 @@ const AllTasks = () => {
                           <button onClick={() => editTitle(task.id, task.title, task.dueDate)}>
                             <SquarePen size={14} className="text-blue-600" />
                           </button>
-                          <button onClick={() => deleteTask(task.id)}>
+                          <button onClick={() => handleDeleteTask(task.id)}>
                             <Trash2 size={15} color="red" className="cursor-pointer opacity-60 hover:opacity-100 transition-opacity" />
                           </button>
                         </div>

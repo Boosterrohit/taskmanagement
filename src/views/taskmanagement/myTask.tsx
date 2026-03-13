@@ -1,9 +1,11 @@
 ﻿import { Plus, SquarePen, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTasks } from "@/contexts/taskContext";
+import { useToast } from "@/contexts/toastContext";
 
 const MyTask = () => {
   const { getTasksByListType, addTask, updateTask, deleteTask, toggleComplete, loading } = useTasks();
+  const { showSuccess, showError } = useToast();
   const [inputTitle, setInputTitle] = useState("");
   const [inputDate, setInputDate] = useState("");
   const [isAddingTask, setIsAddingTask] = useState(false);
@@ -27,10 +29,16 @@ const MyTask = () => {
     const title = inputTitle.trim();
     if (!title) return;
     setIsAddingTask(true);
-    await addTask({ title, listType: "my-day", dueDate: inputDate || null });
-    setIsAddingTask(false);
-    setInputTitle("");
-    setInputDate("");
+    try {
+      await addTask({ title, listType: "my-day", dueDate: inputDate || null });
+      setInputTitle("");
+      setInputDate("");
+      showSuccess("Task added");
+    } catch {
+      showError("Failed to add task");
+    } finally {
+      setIsAddingTask(false);
+    }
   };
 
   const openEdit = (id: string, title: string, dueDate: string | null) => {
@@ -42,9 +50,24 @@ const MyTask = () => {
     const trimmed = editTask.title.trim();
     if (!trimmed) return;
     setIsSavingEdit(true);
-    await updateTask(editTask.id, { title: trimmed, dueDate: editTask.dueDate || null });
-    setIsSavingEdit(false);
-    setEditTask(null);
+    try {
+      await updateTask(editTask.id, { title: trimmed, dueDate: editTask.dueDate || null });
+      setEditTask(null);
+      showSuccess("Task updated");
+    } catch {
+      showError("Failed to update task");
+    } finally {
+      setIsSavingEdit(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteTask(id);
+      showSuccess("Task deleted");
+    } catch {
+      showError("Failed to delete task");
+    }
   };
 
   return (
@@ -112,7 +135,7 @@ const MyTask = () => {
                     <button onClick={() => openEdit(task.id, task.title, task.dueDate)}>
                       <SquarePen size={18} className="text-blue-500" />
                     </button>
-                    <button onClick={() => deleteTask(task.id)}>
+                    <button onClick={() => handleDelete(task.id)}>
                       <Trash2 size={18} color="red" />
                     </button>
                   </div>
@@ -141,7 +164,7 @@ const MyTask = () => {
                   <button onClick={() => toggleComplete(task.id, false)} className="text-xs text-blue-600">
                     Reopen
                   </button>
-                  <button onClick={() => deleteTask(task.id)}>
+                  <button onClick={() => handleDelete(task.id)}>
                     <Trash2 size={20} color="red" />
                   </button>
                 </div>

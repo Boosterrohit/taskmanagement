@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight, Plus, SquarePen, Trash2 } from "lucide-react";
 import { useTasks } from "@/contexts/taskContext";
+import { useToast } from "@/contexts/toastContext";
 
 const WEEK_DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -26,6 +27,7 @@ const isSameDay = (a: Date, b: Date) =>
 
 const Calendar = () => {
   const { tasks, addTask, updateTask, deleteTask, toggleComplete } = useTasks();
+  const { showSuccess, showError } = useToast();
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [newTaskTitle, setNewTaskTitle] = useState("");
@@ -111,14 +113,20 @@ const Calendar = () => {
   const handleAddTask = async () => {
     if (!selectedDate || !newTaskTitle.trim()) return;
     setIsAddingTask(true);
-    await addTask({
-      title: newTaskTitle.trim(),
-      listType: "calendar",
-      dueDate: formatKey(selectedDate),
-      bucket: null,
-    });
-    setIsAddingTask(false);
-    setNewTaskTitle("");
+    try {
+      await addTask({
+        title: newTaskTitle.trim(),
+        listType: "calendar",
+        dueDate: formatKey(selectedDate),
+        bucket: null,
+      });
+      setNewTaskTitle("");
+      showSuccess("Task added");
+    } catch {
+      showError("Failed to add task");
+    } finally {
+      setIsAddingTask(false);
+    }
   };
 
   const handleCloseDialog = () => {
@@ -136,9 +144,24 @@ const Calendar = () => {
     const trimmed = editTask.title.trim();
     if (!trimmed) return;
     setIsSavingEdit(true);
-    await updateTask(editTask.id, { title: trimmed, dueDate: editTask.dueDate || null });
-    setIsSavingEdit(false);
-    setEditTask(null);
+    try {
+      await updateTask(editTask.id, { title: trimmed, dueDate: editTask.dueDate || null });
+      setEditTask(null);
+      showSuccess("Task updated");
+    } catch {
+      showError("Failed to update task");
+    } finally {
+      setIsSavingEdit(false);
+    }
+  };
+
+  const handleDeleteTask = async (id: string) => {
+    try {
+      await deleteTask(id);
+      showSuccess("Task deleted");
+    } catch {
+      showError("Failed to delete task");
+    }
   };
 
   const selectedKey = selectedDate ? formatKey(selectedDate) : null;
@@ -306,7 +329,7 @@ const Calendar = () => {
                       <button type="button" onClick={() => editTask_open(task.id, task.title, task.dueDate || "")} className="p-1 rounded-full hover:bg-blue-100">
                         <SquarePen className="w-3 h-3" />
                       </button>
-                      <button type="button" onClick={() => deleteTask(task.id)} className="p-1 rounded-full hover:bg-red-100 text-red-500">
+                      <button type="button" onClick={() => handleDeleteTask(task.id)} className="p-1 rounded-full hover:bg-red-100 text-red-500">
                         <Trash2 className="w-3 h-3" />
                       </button>
                     </div>

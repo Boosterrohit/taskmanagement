@@ -1,11 +1,13 @@
 ﻿import React, { useState, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useBoard } from "@/contexts/boardContext";
+import { useToast } from "@/contexts/toastContext";
 import type { BoardTask } from "@/contexts/boardContext";
 import { Plus, Trash2, SquarePen } from "lucide-react";
 
 const BoardPage = () => {
   const navigate = useNavigate();
+  const { showSuccess, showError } = useToast();
   const { boardId } = useParams<{ boardId: string }>();
   const {
     boards,
@@ -91,9 +93,15 @@ const BoardPage = () => {
   const confirmAddColumn = async () => {
     if (!newColumnTitle.trim()) return;
     setIsAddingColumn(true);
-    await addColumn(board.id, newColumnTitle.trim());
-    setIsAddingColumn(false);
-    setShowColumnDialog(false);
+    try {
+      await addColumn(board.id, newColumnTitle.trim());
+      setShowColumnDialog(false);
+      showSuccess("Section added");
+    } catch {
+      showError("Failed to add section");
+    } finally {
+      setIsAddingColumn(false);
+    }
   };
 
   const openRenameCol = (colId: string, current: string) => {
@@ -103,25 +111,43 @@ const BoardPage = () => {
   const confirmRenameCol = async () => {
     if (!renameColDialog?.title.trim()) return;
     setIsRenamingColumn(true);
-    await renameColumn(board.id, renameColDialog.id, renameColDialog.title.trim());
-    setIsRenamingColumn(false);
-    setRenameColDialog(null);
+    try {
+      await renameColumn(board.id, renameColDialog.id, renameColDialog.title.trim());
+      setRenameColDialog(null);
+      showSuccess("Section updated");
+    } catch {
+      showError("Failed to update section");
+    } finally {
+      setIsRenamingColumn(false);
+    }
   };
 
   const confirmDeleteCol = async () => {
     if (!deleteColId) return;
     setIsDeletingColumn(true);
-    await deleteColumn(board.id, deleteColId);
-    setIsDeletingColumn(false);
-    setDeleteColId(null);
+    try {
+      await deleteColumn(board.id, deleteColId);
+      setDeleteColId(null);
+      showSuccess("Section deleted");
+    } catch {
+      showError("Failed to delete section");
+    } finally {
+      setIsDeletingColumn(false);
+    }
   };
 
   const confirmDeleteBoard = async () => {
     setIsDeletingBoard(true);
-    await deleteBoard(board.id);
-    setIsDeletingBoard(false);
-    setShowDeleteBoardDialog(false);
-    navigate("/my-task");
+    try {
+      await deleteBoard(board.id);
+      setShowDeleteBoardDialog(false);
+      showSuccess("Board deleted");
+      navigate("/my-task");
+    } catch {
+      showError("Failed to delete board");
+    } finally {
+      setIsDeletingBoard(false);
+    }
   };
 
   const handleAddTask = (colId: string) => {
@@ -137,14 +163,20 @@ const BoardPage = () => {
     if (!taskColumn || !taskText.trim()) return;
     setIsAddingTask(true);
     const emails = taskEmails.split(",").map((e) => e.trim()).filter(Boolean);
-    await addTask(board.id, taskColumn, {
-      text: taskText.trim(),
-      date: taskDate,
-      assigneeEmails: emails,
-      status: taskStatus || undefined,
-    });
-    setIsAddingTask(false);
-    setShowTaskDialog(false);
+    try {
+      await addTask(board.id, taskColumn, {
+        text: taskText.trim(),
+        date: taskDate,
+        assigneeEmails: emails,
+        status: taskStatus || undefined,
+      });
+      setShowTaskDialog(false);
+      showSuccess("Task added");
+    } catch {
+      showError("Failed to add task");
+    } finally {
+      setIsAddingTask(false);
+    }
   };
 
   const openEditTask = (colId: string, task: BoardTask) => {
@@ -162,14 +194,29 @@ const BoardPage = () => {
     if (!editTaskState || !editTaskState.text.trim()) return;
     setIsSavingTask(true);
     const emails = editTaskState.emails.split(",").map((e) => e.trim()).filter(Boolean);
-    await updateTask(board.id, editTaskState.colId, editTaskState.task.id, {
-      text: editTaskState.text.trim(),
-      date: editTaskState.date,
-      assigneeEmails: emails,
-      status: (editTaskState.status as BoardTask["status"]) || undefined,
-    });
-    setIsSavingTask(false);
-    setEditTaskState(null);
+    try {
+      await updateTask(board.id, editTaskState.colId, editTaskState.task.id, {
+        text: editTaskState.text.trim(),
+        date: editTaskState.date,
+        assigneeEmails: emails,
+        status: (editTaskState.status as BoardTask["status"]) || undefined,
+      });
+      setEditTaskState(null);
+      showSuccess("Task updated");
+    } catch {
+      showError("Failed to update task");
+    } finally {
+      setIsSavingTask(false);
+    }
+  };
+
+  const handleDeleteTask = async (columnId: string, taskId: string) => {
+    try {
+      await deleteTask(board.id, columnId, taskId);
+      showSuccess("Task deleted");
+    } catch {
+      showError("Failed to delete task");
+    }
   };
 
   return (
@@ -342,7 +389,7 @@ const BoardPage = () => {
                       <button onClick={() => openEditTask(col.id, task)}>
                         <SquarePen size={11} className="text-gray-400 hover:text-blue-500 cursor-pointer" />
                       </button>
-                      <button onClick={() => deleteTask(board.id, col.id, task.id)}>
+                      <button onClick={() => handleDeleteTask(col.id, task.id)}>
                         <Trash2 size={11} className="text-gray-400 hover:text-red-500 cursor-pointer" />
                       </button>
                     </div>
