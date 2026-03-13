@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import Sidebar from "./menu/Sidebar";
 import Header from "./menu/Header";
 import { BoardProvider } from "@/contexts/boardContext";
+import { TaskProvider } from "@/contexts/taskContext";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -19,19 +20,21 @@ const Layout = ({ children }: LayoutProps) => {
     setIsSidebarOpen(false);
   };
   return (
-    <BoardProvider>
-      <main className="flex flex-row h-screen w-screen overflow-hidden back">
-        <aside className="flex-shrink-0">
-          <Sidebar isOpen={isSidebarOpen} onClose={closeSidebar} />
-        </aside>
-        <section className="flex-1 flex flex-col overflow-hidden">
-          <Header isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
-          <main className="flex-1 py-1 md:px-6 px-3 overflow-y-auto">
-            {children}
-          </main>
-        </section>
-      </main>
-    </BoardProvider>
+    <TaskProvider>
+      <BoardProvider>
+        <main className="flex flex-row h-screen w-screen overflow-hidden back">
+          <aside className="flex-shrink-0">
+            <Sidebar isOpen={isSidebarOpen} onClose={closeSidebar} />
+          </aside>
+          <section className="flex-1 flex flex-col overflow-hidden">
+            <Header isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+            <main className="flex-1 py-1 md:px-6 px-3 overflow-y-auto">
+              {children}
+            </main>
+          </section>
+        </main>
+      </BoardProvider>
+    </TaskProvider>
   );
 };
 

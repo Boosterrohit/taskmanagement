@@ -37,9 +37,9 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     setNewBoardName("");
     setShowBoardDialog(true);
   };
-  const confirmAddBoard = () => {
+  const confirmAddBoard = async () => {
     if (newBoardName.trim()) {
-      const newBoard = addBoard(newBoardName.trim());
+      const newBoard = await addBoard(newBoardName.trim());
       navigate(`/board/${newBoard.id}`);
     }
     setShowBoardDialog(false);

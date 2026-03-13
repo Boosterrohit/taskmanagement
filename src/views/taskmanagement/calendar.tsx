@@ -1,27 +1,6 @@
-
 import { useMemo, useState } from "react";
-import { ChevronLeft, ChevronRight, Plus, Trash2 } from "lucide-react";
-
-type CalendarTask = {
-  id: number;
-  title: string;
-};
-
-type TasksByDate = Record<string, CalendarTask[]>;
-
-type Holiday = {
-  date: string; // YYYY-MM-DD
-  name: string;
-};
-
-// Example Nepali holidays in Gregorian dates.
-// TODO: Adjust/update dates per year based on your official Nepali holiday calendar.
-const NEPALI_HOLIDAYS: Holiday[] = [
-  { date: "2026-04-13", name: "Nepali New Year" },
-  { date: "2026-10-20", name: "Dashain (Vijaya Dashami)" },
-  { date: "2026-11-08", name: "Tihar (Laxmi Puja)" },
-  { date: "2026-11-09", name: "Tihar (Bhai Tika)" },
-];
+import { ChevronLeft, ChevronRight, Plus, SquarePen, Trash2 } from "lucide-react";
+import { useTasks } from "@/contexts/taskContext";
 
 const WEEK_DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -37,17 +16,15 @@ const isSameDay = (a: Date, b: Date) =>
   a.getMonth() === b.getMonth() &&
   a.getDate() === b.getDate();
 
-const getHolidayForDate = (date: Date): Holiday | undefined => {
-  const key = formatKey(date);
-  return NEPALI_HOLIDAYS.find((h) => h.date === key);
-};
-
 const Calendar = () => {
+  const { tasks, addTask, updateTask, deleteTask, toggleComplete } = useTasks();
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
-  const [tasksByDate, setTasksByDate] = useState<TasksByDate>({});
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  // edit dialog state
+  const [editTask, setEditTask] = useState<{ id: string; title: string; dueDate: string } | null>(null);
 
   const today = useMemo(() => new Date(), []);
 
@@ -59,46 +36,24 @@ const Calendar = () => {
   }, [currentMonth]);
 
   const daysGrid = useMemo(() => {
-    const startOfMonth = new Date(
-      currentMonth.getFullYear(),
-      currentMonth.getMonth(),
-      1
-    );
-    const endOfMonth = new Date(
-      currentMonth.getFullYear(),
-      currentMonth.getMonth() + 1,
-      0
-    );
+    const startOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
+    const endOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
 
-    const startDay = startOfMonth.getDay(); // 0 (Sun) - 6 (Sat)
+    const startDay = startOfMonth.getDay();
     const daysInMonth = endOfMonth.getDate();
 
-    const cells: {
-      date: Date;
-      inCurrentMonth: boolean;
-    }[] = [];
+    const cells: { date: Date; inCurrentMonth: boolean }[] = [];
 
-    // Previous month's trailing days
-    for (let i = startDay - 1; i >= 0; i--) {
-      const d = new Date(
-        currentMonth.getFullYear(),
-        currentMonth.getMonth(),
-        1 - i - 1
-      );
+    for (let i = startDay - 1; i >= 0; i -= 1) {
+      const d = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1 - i - 1);
       cells.push({ date: d, inCurrentMonth: false });
     }
 
-    // Current month days
-    for (let day = 1; day <= daysInMonth; day++) {
-      const d = new Date(
-        currentMonth.getFullYear(),
-        currentMonth.getMonth(),
-        day
-      );
+    for (let day = 1; day <= daysInMonth; day += 1) {
+      const d = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
       cells.push({ date: d, inCurrentMonth: true });
     }
 
-    // Next month's leading days to fill 6 rows (6 * 7 = 42)
     while (cells.length < 42) {
       const last = cells[cells.length - 1].date;
       const d = new Date(last.getFullYear(), last.getMonth(), last.getDate() + 1);
@@ -108,16 +63,21 @@ const Calendar = () => {
     return cells;
   }, [currentMonth]);
 
+  const tasksByDate = useMemo(() => {
+    return tasks.reduce((acc, task) => {
+      if (!task.dueDate) return acc;
+      if (!acc[task.dueDate]) acc[task.dueDate] = [];
+      acc[task.dueDate].push(task);
+      return acc;
+    }, {} as Record<string, typeof tasks>);
+  }, [tasks]);
+
   const handlePrevMonth = () => {
-    setCurrentMonth(
-      (prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1)
-    );
+    setCurrentMonth((prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
   };
 
   const handleNextMonth = () => {
-    setCurrentMonth(
-      (prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1)
-    );
+    setCurrentMonth((prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
   };
 
   const handleToday = () => {
@@ -133,26 +93,19 @@ const Calendar = () => {
 
   const handleDayClick = (cellDate: Date, inCurrentMonth: boolean) => {
     if (!inCurrentMonth) {
-      setCurrentMonth(
-        new Date(cellDate.getFullYear(), cellDate.getMonth(), 1)
-      );
+      setCurrentMonth(new Date(cellDate.getFullYear(), cellDate.getMonth(), 1));
     }
     openDialogForDate(cellDate);
   };
 
-  const handleAddTask = () => {
+  const handleAddTask = async () => {
     if (!selectedDate || !newTaskTitle.trim()) return;
-    const key = formatKey(selectedDate);
-    setTasksByDate((prev) => ({
-      ...prev,
-      [key]: [
-        ...(prev[key] || []),
-        {
-          id: Date.now(),
-          title: newTaskTitle.trim(),
-        },
-      ],
-    }));
+    await addTask({
+      title: newTaskTitle.trim(),
+      listType: "calendar",
+      dueDate: formatKey(selectedDate),
+      bucket: null,
+    });
     setNewTaskTitle("");
   };
 
@@ -162,41 +115,57 @@ const Calendar = () => {
     setNewTaskTitle("");
   };
 
-  const handleDeleteTask = (taskId: number) => {
-    if (!selectedDate) return;
-    const key = formatKey(selectedDate);
-    setTasksByDate((prev) => {
-      const existing = prev[key] || [];
-      const updated = existing.filter((t) => t.id !== taskId);
-      if (updated.length === 0) {
-        const { [key]: _removed, ...rest } = prev;
-        return rest;
-      }
-      return {
-        ...prev,
-        [key]: updated,
-      };
-    });
+  const editTask_open = (id: string, current: string, currentDate: string) => {
+    setEditTask({ id, title: current, dueDate: currentDate });
+  };
+
+  const confirmEdit = async () => {
+    if (!editTask) return;
+    const trimmed = editTask.title.trim();
+    if (!trimmed) return;
+    await updateTask(editTask.id, { title: trimmed, dueDate: editTask.dueDate || null });
+    setEditTask(null);
   };
 
   const selectedKey = selectedDate ? formatKey(selectedDate) : null;
   const selectedTasks = selectedKey ? tasksByDate[selectedKey] || [] : [];
-  const selectedHoliday = selectedDate ? getHolidayForDate(selectedDate) : null;
 
   return (
     <div className="space-y-4">
+      {/* Edit task dialog */}
+      {editTask && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-xl shadow-xl w-80">
+            <h2 className="text-lg font-semibold mb-3">Edit Task</h2>
+            <input
+              type="text"
+              value={editTask.title}
+              onChange={(e) => setEditTask({ ...editTask, title: e.target.value })}
+              onKeyDown={(e) => e.key === "Enter" && confirmEdit()}
+              className="w-full border px-3 py-2 rounded-lg mb-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              placeholder="Task title"
+              autoFocus
+            />
+            <label className="text-xs text-gray-500 mb-1 block">Due date</label>
+            <input
+              type="date"
+              value={editTask.dueDate}
+              onChange={(e) => setEditTask({ ...editTask, dueDate: e.target.value })}
+              className="w-full border px-3 py-2 rounded-lg mb-4"
+            />
+            <div className="flex justify-end gap-2">
+              <button className="px-4 py-2 rounded-lg bg-gray-200" onClick={() => setEditTask(null)}>Cancel</button>
+              <button className="px-4 py-2 rounded-lg bg-blue-500 text-white" onClick={confirmEdit}>Save</button>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="flex items-center justify-between gap-4 bg-white/80 rounded-xl px-4 py-3 shadow-sm border">
         <div className="flex items-center gap-2">
-          <button
-            onClick={handlePrevMonth}
-            className="p-1.5 rounded-full hover:bg-gray-100 transition-colors"
-          >
+          <button onClick={handlePrevMonth} className="p-1.5 rounded-full hover:bg-gray-100 transition-colors">
             <ChevronLeft className="w-4 h-4 text-gray-600" />
           </button>
-          <button
-            onClick={handleNextMonth}
-            className="p-1.5 rounded-full hover:bg-gray-100 transition-colors"
-          >
+          <button onClick={handleNextMonth} className="p-1.5 rounded-full hover:bg-gray-100 transition-colors">
             <ChevronRight className="w-4 h-4 text-gray-600" />
           </button>
           <button
@@ -205,22 +174,15 @@ const Calendar = () => {
           >
             Today
           </button>
-          <h2 className="ml-4 text-lg font-semibold text-gray-800">
-            {monthLabel}
-          </h2>
+          <h2 className="ml-4 text-lg font-semibold text-gray-800">{monthLabel}</h2>
         </div>
-        <div className="text-xs text-gray-500 md:block hidden">
-          Click any day box to add tasks. Nepali holidays are highlighted in red.
-        </div>
+        <div className="text-xs text-gray-500 md:block hidden">Click any day to add and manage tasks.</div>
       </div>
 
       <div className="bg-white/80 rounded-2xl shadow-md border overflow-hidden">
         <div className="grid grid-cols-7 border-b bg-gray-50/80">
           {WEEK_DAYS.map((day) => (
-            <div
-              key={day}
-              className="text-center py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide"
-            >
+            <div key={day} className="text-center py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">
               {day}
             </div>
           ))}
@@ -229,35 +191,14 @@ const Calendar = () => {
         <div className="grid grid-cols-7 auto-rows-[90px]">
           {daysGrid.map(({ date, inCurrentMonth }) => {
             const key = formatKey(date);
+            const dayTasks = tasksByDate[key] || [];
+            const visibleTasks = dayTasks.slice(0, 2);
+            const remainingCount = dayTasks.length - visibleTasks.length;
             const isToday = isSameDay(date, today);
-            const holiday = getHolidayForDate(date);
-            const tasks = tasksByDate[key] || [];
-            const visibleTasks = tasks.slice(0, 2);
-            const remainingCount = tasks.length - visibleTasks.length;
-            const isSaturday = date.getDay() === 6;
-
-            const todayOnly = new Date(
-              today.getFullYear(),
-              today.getMonth(),
-              today.getDate()
-            );
-            const dateOnly = new Date(
-              date.getFullYear(),
-              date.getMonth(),
-              date.getDate()
-            );
-            const isPast = dateOnly < todayOnly;
 
             const baseButtonClasses =
               "relative border-t border-l last:border-r px-1.5 py-1 text-left group transition-colors";
-
-            const stateClasses = !inCurrentMonth
-              ? "bg-gray-50 text-gray-400 hover:bg-gray-100"
-              : isPast && !isToday
-              ? "bg-gray-100 text-gray-400 cursor-default"
-              : holiday
-              ? "bg-red-50 hover:bg-red-100"
-              : "bg-white hover:bg-blue-50/70";
+            const stateClasses = !inCurrentMonth ? "bg-gray-50 text-gray-400 hover:bg-gray-100" : "bg-white hover:bg-blue-50/70";
 
             return (
               <button
@@ -270,39 +211,24 @@ const Calendar = () => {
                   <div
                     className={[
                       "inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-semibold",
-                      isToday
-                        ? "bg-blue-600 text-white"
-                        : holiday
-                        ? "text-red-500"
-                        : isSaturday
-                        ? "text-red-500"
-                        : "text-gray-700",
+                      isToday ? "bg-blue-600 text-white" : "text-gray-700",
                     ].join(" ")}
                   >
                     {date.getDate()}
                   </div>
-                  {holiday && (
-                    <span className="ml-1 text-[10px] font-medium text-red-500 truncate max-w-[72px]">
-                      {holiday.name}
-                    </span>
-                  )}
                 </div>
 
                 <div className="space-y-0.5">
                   {visibleTasks.map((task) => (
                     <div
                       key={task.id}
-                      className="text-[10px] px-1.5 py-0.5 rounded-md bg-blue-50 text-blue-700 truncate"
+                      className={`text-[10px] px-1.5 py-0.5 rounded-md truncate ${task.completed ? "bg-green-50 text-green-700" : "bg-blue-50 text-blue-700"}`}
                     >
                       {task.title}
                     </div>
                   ))}
-                  {remainingCount > 0 && (
-                    <div className="text-[10px] text-gray-500">
-                      +{remainingCount} more
-                    </div>
-                  )}
-                  {tasks.length === 0 && (
+                  {remainingCount > 0 && <div className="text-[10px] text-gray-500">+{remainingCount} more</div>}
+                  {dayTasks.length === 0 && (
                     <div className="opacity-0 group-hover:opacity-100 text-[10px] text-gray-400 flex items-center gap-1">
                       <Plus className="w-3 h-3" />
                       Add task
@@ -321,9 +247,7 @@ const Calendar = () => {
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-                  {selectedDate.toLocaleDateString("en-US", {
-                    weekday: "long",
-                  })}
+                  {selectedDate.toLocaleDateString("en-US", { weekday: "long" })}
                 </p>
                 <p className="text-lg font-semibold text-gray-900">
                   {selectedDate.toLocaleDateString("en-US", {
@@ -332,39 +256,37 @@ const Calendar = () => {
                     year: "numeric",
                   })}
                 </p>
-                {selectedHoliday && (
-                  <p className="mt-1 text-xs font-semibold text-red-500">
-                    {selectedHoliday.name}
-                  </p>
-                )}
               </div>
-              <button
-                onClick={handleCloseDialog}
-                className="text-xs text-gray-500 hover:text-gray-700"
-              >
+              <button onClick={handleCloseDialog} className="text-xs text-gray-500 hover:text-gray-700">
                 Close
               </button>
             </div>
 
             <div className="space-y-2 max-h-40 overflow-y-auto">
               {selectedTasks.length === 0 ? (
-                <p className="text-xs text-gray-400">
-                  No tasks for this day yet.
-                </p>
+                <p className="text-xs text-gray-400">No tasks for this day yet.</p>
               ) : (
                 selectedTasks.map((task) => (
                   <div
                     key={task.id}
                     className="flex items-center justify-between gap-2 text-sm px-3 py-1.5 rounded-lg bg-blue-50 text-blue-800"
                   >
-                    <span className="flex-1 truncate">{task.title}</span>
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteTask(task.id)}
-                      className="inline-flex items-center justify-center p-1 rounded-full text-xs text-red-500 hover:bg-red-100"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </button>
+                    <label className="flex items-center gap-2 flex-1 min-w-0">
+                      <input
+                        type="checkbox"
+                        checked={task.completed}
+                        onChange={(e) => toggleComplete(task.id, e.target.checked)}
+                      />
+                      <span className={`truncate ${task.completed ? "line-through text-green-700" : ""}`}>{task.title}</span>
+                    </label>
+                    <div className="flex items-center gap-1">
+                      <button type="button" onClick={() => editTask_open(task.id, task.title, task.dueDate || "")} className="p-1 rounded-full hover:bg-blue-100">
+                        <SquarePen className="w-3 h-3" />
+                      </button>
+                      <button type="button" onClick={() => deleteTask(task.id)} className="p-1 rounded-full hover:bg-red-100 text-red-500">
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    </div>
                   </div>
                 ))
               )}
@@ -375,7 +297,7 @@ const Calendar = () => {
                 type="text"
                 value={newTaskTitle}
                 onChange={(e) => setNewTaskTitle(e.target.value)}
-                placeholder="Add a task (like Google Calendar)…"
+                placeholder="Add a task..."
                 className="flex-1 px-3 py-2 text-sm border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/70 focus:border-blue-500"
               />
               <button
