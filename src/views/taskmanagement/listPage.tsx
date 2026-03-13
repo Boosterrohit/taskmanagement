@@ -152,7 +152,7 @@ const ListPage = ({ title }: ListPageProps) => {
               key={task.id}
               onClick={() => setSelectedId(task.id)}
               className={`flex items-center justify-between p-3 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors
-                ${selectedId === task.id ? "bg-blue-50" : ""}`}
+                ${selectedId === task.id ? "bg-blue-50" : "border shadow-md"}`}
             >
               <div className="flex items-center gap-2">
                 <input

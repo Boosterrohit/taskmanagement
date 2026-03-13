@@ -1,17 +1,5 @@
 [
   {
-    "id": "3f3ed592-6032-4c53-abe8-e07bc5f413c5",
-    "title": "sdfadsfs",
-    "listType": "calendar",
-    "dueDate": "2026-03-14",
-    "completed": false,
-    "notes": "",
-    "subtasks": [],
-    "bucket": null,
-    "createdAt": "2026-03-13T08:10:21.888Z",
-    "updatedAt": "2026-03-13T08:10:21.888Z"
-  },
-  {
     "id": "bd9ee5a0-630c-4c8e-8c5d-6a0aadd23532",
     "title": "Holiday",
     "listType": "calendar",
@@ -24,78 +12,6 @@
     "updatedAt": "2026-03-13T08:14:21.491Z"
   },
   {
-    "id": "f140fd0e-d9e5-4092-9ad8-baf5839508ce",
-    "title": "rohit",
-    "listType": "calendar",
-    "dueDate": "2026-03-10",
-    "completed": true,
-    "notes": "",
-    "subtasks": [],
-    "bucket": null,
-    "createdAt": "2026-03-13T08:17:48.885Z",
-    "updatedAt": "2026-03-13T08:17:59.002Z"
-  },
-  {
-    "id": "3822f8fa-d8f6-490f-a9bb-a5e28941991c",
-    "title": "fasdfasf",
-    "listType": "calendar",
-    "dueDate": "2026-03-13",
-    "completed": false,
-    "notes": "",
-    "subtasks": [],
-    "bucket": null,
-    "createdAt": "2026-03-13T08:21:45.392Z",
-    "updatedAt": "2026-03-13T08:21:45.392Z"
-  },
-  {
-    "id": "e10eaff3-05bc-4b01-bc8e-53961f63aec5",
-    "title": "fadsf",
-    "listType": "calendar",
-    "dueDate": "2026-03-13",
-    "completed": false,
-    "notes": "",
-    "subtasks": [],
-    "bucket": null,
-    "createdAt": "2026-03-13T08:21:47.609Z",
-    "updatedAt": "2026-03-13T08:21:47.609Z"
-  },
-  {
-    "id": "27c495ba-3aff-4da4-91ef-571ac69fe215",
-    "title": "sfasf",
-    "listType": "calendar",
-    "dueDate": "2026-03-13",
-    "completed": false,
-    "notes": "",
-    "subtasks": [],
-    "bucket": null,
-    "createdAt": "2026-03-13T08:21:50.289Z",
-    "updatedAt": "2026-03-13T08:21:50.289Z"
-  },
-  {
-    "id": "2ae49527-ea6d-4e3d-8436-bbd3cb167c26",
-    "title": "asdfg",
-    "listType": "calendar",
-    "dueDate": "2026-03-13",
-    "completed": false,
-    "notes": "",
-    "subtasks": [],
-    "bucket": null,
-    "createdAt": "2026-03-13T08:21:53.355Z",
-    "updatedAt": "2026-03-13T08:34:04.865Z"
-  },
-  {
-    "id": "b2e9c4b1-5629-4fa4-a1d9-38d5361ab71c",
-    "title": "afadfadsa",
-    "listType": "calendar",
-    "dueDate": "2026-03-13",
-    "completed": false,
-    "notes": "",
-    "subtasks": [],
-    "bucket": null,
-    "createdAt": "2026-03-13T08:21:58.259Z",
-    "updatedAt": "2026-03-13T08:21:58.259Z"
-  },
-  {
     "id": "fd489874-e5bf-4028-a5d4-2b1dec7bd78f",
     "title": "ss",
     "listType": "calendar",
@@ -106,5 +22,17 @@
     "bucket": null,
     "createdAt": "2026-03-13T08:54:55.810Z",
     "updatedAt": "2026-03-13T08:54:55.810Z"
+  },
+  {
+    "id": "c974aae4-e224-4bcc-989e-d03553e3c078",
+    "title": "dsdf",
+    "listType": "calendar",
+    "dueDate": "2026-06-20",
+    "completed": false,
+    "notes": "",
+    "subtasks": [],
+    "bucket": null,
+    "createdAt": "2026-03-13T09:39:06.239Z",
+    "updatedAt": "2026-03-13T09:39:06.239Z"
   }
 ]

@@ -34,7 +34,7 @@ const AllTasks = () => {
     upcoming: "",
     someday: "",
   });
-  const [taskFilter, setTaskFilter] = useState<"all" | "pending" | "completed">("all");
+  const [taskFilter, setTaskFilter] = useState<"all" | "pending" | "completed">("pending");
   const [isAddingOverview, setIsAddingOverview] = useState(false);
   const [addingBucket, setAddingBucket] = useState<TaskBucket | null>(null);
   const [isSavingEdit, setIsSavingEdit] = useState(false);
@@ -164,7 +164,7 @@ const AllTasks = () => {
                 <div className="flex items-center gap-2">
                   <button onClick={() => setTaskFilter("pending")} className={`text-xs px-3 py-1 rounded-full border ${taskFilter === "pending" ? "bg-blue-500 text-white border-blue-500" : "text-gray-600"}`}>Pending</button>
                   <button onClick={() => setTaskFilter("completed")} className={`text-xs px-3 py-1 rounded-full border ${taskFilter === "completed" ? "bg-green-500 text-white border-green-500" : "text-gray-600"}`}>Completed</button>
-                  <button onClick={() => setTaskFilter("all")} className={`text-xs px-3 py-1 rounded-full border ${taskFilter === "all" ? "bg-gray-700 text-white border-gray-700" : "text-gray-600"}`}>All</button>
+                  {/* <button onClick={() => setTaskFilter("all")} className={`text-xs px-3 py-1 rounded-full border ${taskFilter === "all" ? "bg-gray-700 text-white border-gray-700" : "text-gray-600"}`}>All</button> */}
                 </div>
               </div>
               {loading ? (
@@ -178,7 +178,7 @@ const AllTasks = () => {
                     <li
                       key={task.id}
                       onClick={() => setSelectedId(task.id)}
-                      className={`bg-white p-3 border shadow-md rounded-lg cursor-pointer ${selectedId === task.id ? "ring-2 ring-blue-300" : ""}`}
+                      className={`bg-white p-3 border shadow-md rounded-lg cursor-pointer ${selectedId === task.id ? "border-purple-400 border-2" : ""}`}
                     >
                       <div className="flex items-start justify-between gap-3">
                         <label className="flex items-start gap-2">
@@ -209,16 +209,17 @@ const AllTasks = () => {
             </div>
 
             <div className="absolute bottom-0 py-3 bg-white left-0 w-full px-5">
-              <div className="rounded-2xl border shadow-md p-2 flex flex-col md:flex-row gap-2">
+              <div className="rounded-2xl border shadow-md p-2 flex flex-col gap-2">
                 <input
                   type="text"
                   value={inputTitle}
                   onChange={(e) => setInputTitle(e.target.value)}
                   placeholder="Add task..."
-                  className="rounded-md h-11 px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="rounded-md h-11  px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
                   onKeyDown={(e) => e.key === "Enter" && addOverviewTask()}
                 />
-                <input
+               <div className="flex items-center justify-between gap-2">
+                 <input
                   type="date"
                   value={inputDate}
                   onChange={(e) => setInputDate(e.target.value)}
@@ -227,10 +228,11 @@ const AllTasks = () => {
                 <button
                   onClick={addOverviewTask}
                   disabled={isAddingOverview || !inputTitle.trim()}
-                  className="bg-blue-500 text-white px-4 py-2 rounded-full hover:bg-blue-600 transition-colors duration-200 flex items-center justify-center"
+                  className="bg-blue-500 w-full text-white px-4 py-2 rounded-full hover:bg-blue-600 transition-colors duration-200 flex items-center justify-center"
                 >
                   <Plus size={20} />{isAddingOverview ? "Adding..." : "Add"}
                 </button>
+               </div>
               </div>
             </div>
           </div>

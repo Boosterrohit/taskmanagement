@@ -53,14 +53,14 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     <>
       {isOpen && (
         <div
-          className="fixed inset-0 bg-white/0 bg-opacity-50 backdrop-blur-sm z-40 lg:hidden"
+          className="fixed  inset-0 bg-white/0 bg-opacity-50 backdrop-blur-sm z-40 lg:hidden"
           onClick={onClose}
         />
       )}
 
       {/* board dialog */}
       {showBoardDialog && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+        <div className="fixed inset-0  bg-black bg-opacity-40 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg w-80">
             <h2 className="text-lg font-semibold mb-2">New Board</h2>
             <input
@@ -89,21 +89,21 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
           </div>
         </div>
       )}
-      <div className={`fixed lg:static top-0 left-0 w-60 bg-white/70 backdrop-blur-md shadow-lg p-5 text-white flex flex-col h-screen z-50 transform transition-transform duration-300 ease-in-out ${
+      <div className={`fixed lg:static  top-0  left-0 w-60 bg-white/70 backdrop-blur-md shadow-lg p-5 text-white flex flex-col h-screen z-50 transform transition-transform duration-300 ease-in-out ${
           isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         }`}>
-        <div className="text-black flex gap-2">
+        <div className="text-black flex gap-2 ">
           <img src={profile} alt="Profile" className="w-10 h-10 rounded-full inline-block object-cover" />
           <div className="flex flex-col leading-5 mt-0.5">
             <span>Rohit Sah</span>
             <span className="text-xs text-gray-500">Free Plan</span>
           </div>
         </div>
-        <div>
+        <div className="overflow-y-auto h-[79vh] hide-scrollbar">
           {SIDE_BAR_MENU.map((item) => {
             return (
-              <div key={item.id} className="mt-8">
-                <h3 className="text-black text-base uppercase font-semibold mb-2">{item.title}</h3>
+              <div key={item.id} className="mt-8 ">
+                <h3 className="text-black text-base  uppercase font-semibold mb-2">{item.title}</h3>
                 <ul className="flex flex-col gap-2">
                   {item.SUBMENU.map((link) => {
                     const active = isMenuActive(link.slug);
