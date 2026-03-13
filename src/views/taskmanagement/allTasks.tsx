@@ -34,6 +34,10 @@ const AllTasks = () => {
     upcoming: "",
     someday: "",
   });
+  const [taskFilter, setTaskFilter] = useState<"all" | "pending" | "completed">("all");
+  const [isAddingOverview, setIsAddingOverview] = useState(false);
+  const [addingBucket, setAddingBucket] = useState<TaskBucket | null>(null);
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
 
   // edit dialog state
   const [editTask, setEditTask] = useState<{ id: string; title: string; dueDate: string } | null>(null);
@@ -43,6 +47,11 @@ const AllTasks = () => {
 
   const selectedTask = listTasks.find((task) => task.id === selectedId) || null;
   const activeTasks = useMemo(() => listTasks.filter((task) => !task.completed), [listTasks]);
+  const filteredOverviewTasks = useMemo(() => {
+    if (taskFilter === "pending") return listTasks.filter((task) => !task.completed);
+    if (taskFilter === "completed") return listTasks.filter((task) => task.completed);
+    return listTasks;
+  }, [listTasks, taskFilter]);
   const completedCount = useMemo(() => listTasks.filter((task) => task.completed).length, [listTasks]);
 
   const tasksByBucket = useMemo(() => {
@@ -56,6 +65,8 @@ const AllTasks = () => {
     const title = inputTitle.trim();
     if (!title) return;
 
+    setIsAddingOverview(true);
+
     const created = await addTask({
       title,
       listType: "all-tasks",
@@ -63,6 +74,7 @@ const AllTasks = () => {
       bucket: "today",
     });
 
+    setIsAddingOverview(false);
     setInputTitle("");
     setInputDate("");
     setSelectedId(created.id);
@@ -72,6 +84,8 @@ const AllTasks = () => {
     const title = inputByBucket[bucket].trim();
     if (!title) return;
 
+    setAddingBucket(bucket);
+
     await addTask({
       title,
       listType: "all-tasks",
@@ -79,6 +93,7 @@ const AllTasks = () => {
       bucket,
     });
 
+    setAddingBucket(null);
     setInputByBucket((prev) => ({ ...prev, [bucket]: "" }));
     setDateByBucket((prev) => ({ ...prev, [bucket]: "" }));
   };
@@ -91,7 +106,9 @@ const AllTasks = () => {
     if (!editTask) return;
     const trimmed = editTask.title.trim();
     if (!trimmed) return;
+    setIsSavingEdit(true);
     await updateTask(editTask.id, { title: trimmed, dueDate: editTask.dueDate || null });
+    setIsSavingEdit(false);
     setEditTask(null);
   };
 
@@ -133,7 +150,7 @@ const AllTasks = () => {
             />
             <div className="flex justify-end gap-2">
               <button className="px-4 py-2 rounded-lg bg-gray-200" onClick={() => setEditTask(null)}>Cancel</button>
-              <button className="px-4 py-2 rounded-lg bg-blue-500 text-white" onClick={confirmEdit}>Save</button>
+              <button className="px-4 py-2 rounded-lg bg-blue-500 text-white" onClick={confirmEdit} disabled={isSavingEdit}>{isSavingEdit ? "Saving..." : "Save"}</button>
             </div>
           </div>
         </div>
@@ -142,15 +159,22 @@ const AllTasks = () => {
         <div className="h-[85vh] overflow-auto flex md:flex-row flex-col gap-7">
           <div className="flex md:w-[80%] md:h-[85vh] min-h-[400px] relative overflow-hidden flex-col gap-4 bg-white shadow-lg p-6 border-2 rounded-xl">
             <div className="md:h-[68vh] h-[600px] hide-scrollbar overflow-y-scroll">
-              <h2 className="text-xl font-bold">All Tasks</h2>
+              <div className="flex items-center justify-between gap-3">
+                <h2 className="text-xl font-bold">All Tasks</h2>
+                <div className="flex items-center gap-2">
+                  <button onClick={() => setTaskFilter("pending")} className={`text-xs px-3 py-1 rounded-full border ${taskFilter === "pending" ? "bg-blue-500 text-white border-blue-500" : "text-gray-600"}`}>Pending</button>
+                  <button onClick={() => setTaskFilter("completed")} className={`text-xs px-3 py-1 rounded-full border ${taskFilter === "completed" ? "bg-green-500 text-white border-green-500" : "text-gray-600"}`}>Completed</button>
+                  <button onClick={() => setTaskFilter("all")} className={`text-xs px-3 py-1 rounded-full border ${taskFilter === "all" ? "bg-gray-700 text-white border-gray-700" : "text-gray-600"}`}>All</button>
+                </div>
+              </div>
               {loading ? (
                 <p className="text-sm text-gray-500 mt-2">Loading tasks...</p>
               ) : (
                 <ul className="space-y-3 mt-3">
-                  {activeTasks.length === 0 && (
-                    <li className="text-sm text-gray-500">No pending tasks in All Tasks.</li>
+                  {filteredOverviewTasks.length === 0 && (
+                    <li className="text-sm text-gray-500">No tasks for selected filter.</li>
                   )}
-                  {activeTasks.map((task) => (
+                  {filteredOverviewTasks.map((task) => (
                     <li
                       key={task.id}
                       onClick={() => setSelectedId(task.id)}
@@ -202,9 +226,10 @@ const AllTasks = () => {
                 />
                 <button
                   onClick={addOverviewTask}
+                  disabled={isAddingOverview || !inputTitle.trim()}
                   className="bg-blue-500 text-white px-4 py-2 rounded-full hover:bg-blue-600 transition-colors duration-200 flex items-center justify-center"
                 >
-                  <Plus size={20} />Add
+                  <Plus size={20} />{isAddingOverview ? "Adding..." : "Add"}
                 </button>
               </div>
             </div>
@@ -348,9 +373,10 @@ const AllTasks = () => {
                   />
                   <button
                     onClick={() => addBucketTask(column.key)}
+                    disabled={addingBucket === column.key || !inputByBucket[column.key].trim()}
                     className="absolute right-1.5 bg-blue-500 text-white px-3 py-1.5 rounded-full hover:bg-blue-600 transition-colors duration-200 flex items-center gap-1 text-sm"
                   >
-                    <Plus size={16} />Add
+                    <Plus size={16} />{addingBucket === column.key ? "Adding..." : "Add"}
                   </button>
                 </div>
                 <input

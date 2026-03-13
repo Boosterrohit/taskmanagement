@@ -1,33 +1,7 @@
 [
   {
-    "id": "6389816e-fe0b-4992-a13a-3c96c09505ff",
-    "name": "Test",
+    "id": "49a87de7-bf19-4af9-893b-eaaebb41d250",
+    "name": "Project X",
     "columns": []
-  },
-  {
-    "id": "f84dd57d-2643-4e2b-b18a-aa995c055cde",
-    "name": "dd",
-    "columns": [
-      {
-        "id": "f0513ba3-7aae-4482-a178-44dd537bda29",
-        "title": "dd",
-        "tasks": []
-      },
-      {
-        "id": "8257e914-beac-4532-a117-7c2db4bb0774",
-        "title": "ddd",
-        "tasks": [
-          {
-            "id": "eab0c785-7adb-40a5-98f9-4162ad4c9231",
-            "text": "ddd",
-            "date": "2026-03-19",
-            "assigneeEmails": [
-              "boosterrohit@gmail.com"
-            ],
-            "status": "Pending"
-          }
-        ]
-      }
-    ]
   }
 ]

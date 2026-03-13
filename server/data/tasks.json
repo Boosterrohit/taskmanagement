@@ -12,131 +12,6 @@
     "updatedAt": "2026-03-13T08:10:21.888Z"
   },
   {
-    "id": "26ba64c8-421d-4a85-b6ab-2ca1c984dc19",
-    "title": "fadsf",
-    "listType": "all-tasks",
-    "dueDate": null,
-    "completed": true,
-    "notes": "",
-    "subtasks": [],
-    "bucket": "upcoming",
-    "createdAt": "2026-03-13T08:11:00.144Z",
-    "updatedAt": "2026-03-13T08:33:20.946Z"
-  },
-  {
-    "id": "ddafba41-4ee5-4868-99c3-2bb4d2561c9b",
-    "title": "dsfas",
-    "listType": "all-tasks",
-    "dueDate": "2026-03-20",
-    "completed": false,
-    "notes": "",
-    "subtasks": [],
-    "bucket": "today",
-    "createdAt": "2026-03-13T08:11:21.769Z",
-    "updatedAt": "2026-03-13T08:33:43.400Z"
-  },
-  {
-    "id": "425a7bd6-96e3-4cd9-8a8f-65074f3b867d",
-    "title": "hi",
-    "listType": "personal",
-    "dueDate": null,
-    "completed": false,
-    "notes": "fafdssfadf as ads",
-    "subtasks": [
-      {
-        "id": "1773389556522",
-        "text": "sdfads",
-        "completed": false
-      },
-      {
-        "id": "1773389557084",
-        "text": "dfds",
-        "completed": false
-      },
-      {
-        "id": "1773389557495",
-        "text": "sdfads",
-        "completed": false
-      },
-      {
-        "id": "1773389557677",
-        "text": "fd",
-        "completed": true
-      },
-      {
-        "id": "1773389557882",
-        "text": "fds",
-        "completed": true
-      },
-      {
-        "id": "1773389558050",
-        "text": "fa",
-        "completed": false
-      },
-      {
-        "id": "1773389558189",
-        "text": "dsf",
-        "completed": false
-      },
-      {
-        "id": "1773389559837",
-        "text": "a",
-        "completed": false
-      }
-    ],
-    "bucket": null,
-    "createdAt": "2026-03-13T08:12:04.276Z",
-    "updatedAt": "2026-03-13T08:12:47.423Z"
-  },
-  {
-    "id": "a815b147-df92-430b-8e2b-2cfa4b6b703a",
-    "title": "Hello sir",
-    "listType": "work",
-    "dueDate": "2026-02-25",
-    "completed": false,
-    "notes": "",
-    "subtasks": [],
-    "bucket": null,
-    "createdAt": "2026-03-13T08:13:20.284Z",
-    "updatedAt": "2026-03-13T08:13:20.284Z"
-  },
-  {
-    "id": "24991026-425a-4aa3-b6a2-1d427f9b8951",
-    "title": "raf",
-    "listType": "groceries",
-    "dueDate": null,
-    "completed": true,
-    "notes": "",
-    "subtasks": [],
-    "bucket": null,
-    "createdAt": "2026-03-13T08:13:40.597Z",
-    "updatedAt": "2026-03-13T08:13:58.928Z"
-  },
-  {
-    "id": "0c47bdff-fb02-4da8-9456-a7efa0452a06",
-    "title": "fadsfa",
-    "listType": "groceries",
-    "dueDate": null,
-    "completed": false,
-    "notes": "",
-    "subtasks": [],
-    "bucket": null,
-    "createdAt": "2026-03-13T08:13:42.061Z",
-    "updatedAt": "2026-03-13T08:13:42.061Z"
-  },
-  {
-    "id": "d5debeef-d223-4ea1-9cc5-3c80d856787d",
-    "title": "dfad",
-    "listType": "groceries",
-    "dueDate": null,
-    "completed": false,
-    "notes": "",
-    "subtasks": [],
-    "bucket": null,
-    "createdAt": "2026-03-13T08:13:42.799Z",
-    "updatedAt": "2026-03-13T08:13:42.799Z"
-  },
-  {
     "id": "bd9ee5a0-630c-4c8e-8c5d-6a0aadd23532",
     "title": "Holiday",
     "listType": "calendar",
@@ -219,5 +94,17 @@
     "bucket": null,
     "createdAt": "2026-03-13T08:21:58.259Z",
     "updatedAt": "2026-03-13T08:21:58.259Z"
+  },
+  {
+    "id": "fd489874-e5bf-4028-a5d4-2b1dec7bd78f",
+    "title": "ss",
+    "listType": "calendar",
+    "dueDate": "2026-09-20",
+    "completed": false,
+    "notes": "",
+    "subtasks": [],
+    "bucket": null,
+    "createdAt": "2026-03-13T08:54:55.810Z",
+    "updatedAt": "2026-03-13T08:54:55.810Z"
   }
 ]

@@ -32,6 +32,8 @@ const ListPage = ({ title }: ListPageProps) => {
   const [inputDate, setInputDate] = useState("");
   const [subtaskText, setSubtaskText] = useState("");
   const [noteDraft, setNoteDraft] = useState("");
+  const [isAddingTask, setIsAddingTask] = useState(false);
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
 
   // edit dialog state
   const [editTask, setEditTask] = useState<{ id: string; title: string; dueDate: string } | null>(null);
@@ -52,6 +54,8 @@ const ListPage = ({ title }: ListPageProps) => {
     const text = inputText.trim();
     if (!text) return;
 
+    setIsAddingTask(true);
+
     const newTask = await addTask({
       title: text,
       listType,
@@ -62,6 +66,7 @@ const ListPage = ({ title }: ListPageProps) => {
       bucket: null,
     });
 
+    setIsAddingTask(false);
     setInputText("");
     setInputDate("");
     setSelectedId(newTask.id);
@@ -75,7 +80,9 @@ const ListPage = ({ title }: ListPageProps) => {
     if (!editTask) return;
     const trimmed = editTask.title.trim();
     if (!trimmed) return;
+    setIsSavingEdit(true);
     await updateTask(editTask.id, { title: trimmed, dueDate: editTask.dueDate || null });
+    setIsSavingEdit(false);
     setEditTask(null);
   };
 
@@ -132,7 +139,7 @@ const ListPage = ({ title }: ListPageProps) => {
             />
             <div className="flex justify-end gap-2">
               <button className="px-4 py-2 rounded-lg bg-gray-200" onClick={() => setEditTask(null)}>Cancel</button>
-              <button className="px-4 py-2 rounded-lg bg-blue-500 text-white" onClick={confirmEdit}>Save</button>
+              <button className="px-4 py-2 rounded-lg bg-blue-500 text-white" onClick={confirmEdit} disabled={isSavingEdit}>{isSavingEdit ? "Saving..." : "Save"}</button>
             </div>
           </div>
         </div>
@@ -213,8 +220,8 @@ const ListPage = ({ title }: ListPageProps) => {
               onKeyDown={(e) => e.key === "Enter" && handleAdd()}
             />
 
-            <button onClick={handleAdd} className="bg-blue-500 text-white px-4 py-2 rounded-full hover:bg-blue-600 flex items-center">
-              <Plus size={20} />
+            <button onClick={handleAdd} disabled={isAddingTask || !inputText.trim()} className="bg-blue-500 text-white px-4 py-2 rounded-full hover:bg-blue-600 flex items-center gap-1">
+              <Plus size={20} />{isAddingTask ? "Adding..." : "Add"}
             </button>
           </div>
           <input

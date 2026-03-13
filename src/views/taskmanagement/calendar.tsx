@@ -4,6 +4,14 @@ import { useTasks } from "@/contexts/taskContext";
 
 const WEEK_DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
+const PUBLIC_HOLIDAYS: Record<string, string> = {
+  "2026-01-01": "New Year's Day",
+  "2026-01-26": "Martyrs' Day",
+  "2026-05-01": "Labour Day",
+  "2026-09-20": "Constitution Day",
+  "2026-12-25": "Christmas Day",
+};
+
 const formatKey = (date: Date) => {
   const y = date.getFullYear();
   const m = `${date.getMonth() + 1}`.padStart(2, "0");
@@ -22,9 +30,11 @@ const Calendar = () => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isAddingTask, setIsAddingTask] = useState(false);
 
   // edit dialog state
   const [editTask, setEditTask] = useState<{ id: string; title: string; dueDate: string } | null>(null);
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
 
   const today = useMemo(() => new Date(), []);
 
@@ -100,12 +110,14 @@ const Calendar = () => {
 
   const handleAddTask = async () => {
     if (!selectedDate || !newTaskTitle.trim()) return;
+    setIsAddingTask(true);
     await addTask({
       title: newTaskTitle.trim(),
       listType: "calendar",
       dueDate: formatKey(selectedDate),
       bucket: null,
     });
+    setIsAddingTask(false);
     setNewTaskTitle("");
   };
 
@@ -123,7 +135,9 @@ const Calendar = () => {
     if (!editTask) return;
     const trimmed = editTask.title.trim();
     if (!trimmed) return;
+    setIsSavingEdit(true);
     await updateTask(editTask.id, { title: trimmed, dueDate: editTask.dueDate || null });
+    setIsSavingEdit(false);
     setEditTask(null);
   };
 
@@ -134,7 +148,7 @@ const Calendar = () => {
     <div className="space-y-4">
       {/* Edit task dialog */}
       {editTask && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-[60]">
           <div className="bg-white p-6 rounded-xl shadow-xl w-80">
             <h2 className="text-lg font-semibold mb-3">Edit Task</h2>
             <input
@@ -155,7 +169,7 @@ const Calendar = () => {
             />
             <div className="flex justify-end gap-2">
               <button className="px-4 py-2 rounded-lg bg-gray-200" onClick={() => setEditTask(null)}>Cancel</button>
-              <button className="px-4 py-2 rounded-lg bg-blue-500 text-white" onClick={confirmEdit}>Save</button>
+              <button className="px-4 py-2 rounded-lg bg-blue-500 text-white" onClick={confirmEdit} disabled={isSavingEdit}>{isSavingEdit ? "Saving..." : "Save"}</button>
             </div>
           </div>
         </div>
@@ -195,6 +209,7 @@ const Calendar = () => {
             const visibleTasks = dayTasks.slice(0, 2);
             const remainingCount = dayTasks.length - visibleTasks.length;
             const isToday = isSameDay(date, today);
+            const holidayName = PUBLIC_HOLIDAYS[key];
 
             const baseButtonClasses =
               "relative border-t border-l last:border-r px-1.5 py-1 text-left group transition-colors";
@@ -219,6 +234,11 @@ const Calendar = () => {
                 </div>
 
                 <div className="space-y-0.5">
+                  {holidayName && (
+                    <div className="text-[10px] px-1.5 py-0.5 rounded-md truncate bg-red-50 text-red-700">
+                      {holidayName}
+                    </div>
+                  )}
                   {visibleTasks.map((task) => (
                     <div
                       key={task.id}
@@ -242,7 +262,7 @@ const Calendar = () => {
       </div>
 
       {isDialogOpen && selectedDate && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/30 backdrop-blur-sm">
           <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border p-5 space-y-4">
             <div className="flex items-start justify-between gap-3">
               <div>
@@ -256,6 +276,9 @@ const Calendar = () => {
                     year: "numeric",
                   })}
                 </p>
+                {PUBLIC_HOLIDAYS[formatKey(selectedDate)] && (
+                  <p className="text-xs text-red-600 mt-1">Public Holiday: {PUBLIC_HOLIDAYS[formatKey(selectedDate)]}</p>
+                )}
               </div>
               <button onClick={handleCloseDialog} className="text-xs text-gray-500 hover:text-gray-700">
                 Close
@@ -303,10 +326,10 @@ const Calendar = () => {
               <button
                 onClick={handleAddTask}
                 className="inline-flex items-center gap-1 px-3 py-2 text-xs font-semibold rounded-xl bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
-                disabled={!newTaskTitle.trim()}
+                disabled={!newTaskTitle.trim() || isAddingTask}
               >
                 <Plus className="w-3 h-3" />
-                Add
+                {isAddingTask ? "Adding..." : "Add"}
               </button>
             </div>
           </div>

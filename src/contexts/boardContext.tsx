@@ -26,6 +26,7 @@ interface BoardContextType {
   boards: Board[];
   loading: boolean;
   addBoard: (name: string) => Promise<Board>;
+  deleteBoard: (id: string) => Promise<void>;
   renameBoard: (id: string, name: string) => Promise<void>;
   addColumn: (boardId: string, title: string) => Promise<void>;
   renameColumn: (boardId: string, columnId: string, title: string) => Promise<void>;
@@ -66,6 +67,13 @@ export const BoardProvider = ({ children }: { children: React.ReactNode }) => {
     const board: Board = await res.json();
     setBoards((prev) => [...prev, board]);
     return board;
+  };
+
+  const deleteBoard = async (id: string) => {
+    await fetch(`${API}/boards/${id}`, {
+      method: "DELETE",
+    });
+    setBoards((prev) => prev.filter((b) => b.id !== id));
   };
 
   const renameBoard = async (id: string, name: string) => {
@@ -160,6 +168,7 @@ export const BoardProvider = ({ children }: { children: React.ReactNode }) => {
         boards,
         loading,
         addBoard,
+        deleteBoard,
         renameBoard,
         addColumn,
         renameColumn,

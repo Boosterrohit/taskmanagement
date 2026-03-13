@@ -6,6 +6,8 @@ const MyTask = () => {
   const { getTasksByListType, addTask, updateTask, deleteTask, toggleComplete, loading } = useTasks();
   const [inputTitle, setInputTitle] = useState("");
   const [inputDate, setInputDate] = useState("");
+  const [isAddingTask, setIsAddingTask] = useState(false);
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
 
   // edit dialog state
   const [editTask, setEditTask] = useState<{ id: string; title: string; dueDate: string } | null>(null);
@@ -24,7 +26,9 @@ const MyTask = () => {
   const handleAddTask = async () => {
     const title = inputTitle.trim();
     if (!title) return;
+    setIsAddingTask(true);
     await addTask({ title, listType: "my-day", dueDate: inputDate || null });
+    setIsAddingTask(false);
     setInputTitle("");
     setInputDate("");
   };
@@ -37,7 +41,9 @@ const MyTask = () => {
     if (!editTask) return;
     const trimmed = editTask.title.trim();
     if (!trimmed) return;
+    setIsSavingEdit(true);
     await updateTask(editTask.id, { title: trimmed, dueDate: editTask.dueDate || null });
+    setIsSavingEdit(false);
     setEditTask(null);
   };
 
@@ -66,7 +72,7 @@ const MyTask = () => {
             />
             <div className="flex justify-end gap-2">
               <button className="px-4 py-2 rounded-lg bg-gray-200" onClick={() => setEditTask(null)}>Cancel</button>
-              <button className="px-4 py-2 rounded-lg bg-blue-500 text-white" onClick={confirmEdit}>Save</button>
+              <button className="px-4 py-2 rounded-lg bg-blue-500 text-white" onClick={confirmEdit} disabled={isSavingEdit}>{isSavingEdit ? "Saving..." : "Save"}</button>
             </div>
           </div>
         </div>
@@ -162,9 +168,10 @@ const MyTask = () => {
             />
             <button
               onClick={handleAddTask}
+              disabled={isAddingTask || !inputTitle.trim()}
               className="bg-blue-500 text-white px-4 py-2 h-11 rounded-full hover:bg-blue-600 transition-colors duration-200 flex items-center"
             >
-              <Plus size={20} />Add
+              <Plus size={20} />{isAddingTask ? "Adding..." : "Add"}
             </button>
           </div>
         </div>
