@@ -36,27 +36,169 @@
     "updatedAt": "2026-03-13T09:39:06.239Z"
   },
   {
-    "id": "b1cbf216-9c26-444c-8e32-4346719848ee",
-    "title": "sdfsa",
-    "listType": "all-tasks",
-    "dueDate": null,
+    "id": "f2468efc-5724-4829-9525-a38cf8f281c3",
+    "title": "study12345",
+    "listType": "my-day",
+    "dueDate": "2026-03-27",
     "completed": false,
     "notes": "",
     "subtasks": [],
-    "bucket": "today",
-    "createdAt": "2026-03-13T09:58:42.628Z",
-    "updatedAt": "2026-03-13T09:58:42.628Z"
+    "bucket": null,
+    "createdAt": "2026-03-13T10:05:08.329Z",
+    "updatedAt": "2026-03-15T08:24:26.683Z"
   },
   {
-    "id": "74196555-7dd7-4cf0-8c05-e667829953c6",
-    "title": "sdfsadf",
+    "id": "bcad7839-0814-4e76-b997-8ebb36f52094",
+    "title": "xvds23456",
+    "listType": "calendar",
+    "dueDate": "2026-03-18",
+    "completed": false,
+    "notes": "",
+    "subtasks": [],
+    "bucket": null,
+    "createdAt": "2026-03-13T10:07:46.694Z",
+    "updatedAt": "2026-03-13T10:08:02.559Z"
+  },
+  {
+    "id": "26201540-e5e1-4100-8dba-9c45ccad5ab3",
+    "title": "sdfsd",
+    "listType": "personal",
+    "dueDate": null,
+    "completed": true,
+    "notes": "",
+    "subtasks": [],
+    "bucket": null,
+    "createdAt": "2026-03-13T10:08:25.487Z",
+    "updatedAt": "2026-03-13T10:09:10.529Z"
+  },
+  {
+    "id": "7542dbc3-be2a-4fb9-a0ff-4a8b82ca5d47",
+    "title": "fsdfads",
+    "listType": "personal",
+    "dueDate": null,
+    "completed": false,
+    "notes": "my life my rule",
+    "subtasks": [
+      {
+        "id": "1773396519672",
+        "text": "dsfadfsda",
+        "completed": false
+      },
+      {
+        "id": "1773396520395",
+        "text": "dfas",
+        "completed": false
+      },
+      {
+        "id": "1773396520810",
+        "text": "sdfas",
+        "completed": false
+      },
+      {
+        "id": "1773396521152",
+        "text": "sadfs",
+        "completed": true
+      },
+      {
+        "id": "1773396521528",
+        "text": "fsadfds",
+        "completed": false
+      },
+      {
+        "id": "1773396521831",
+        "text": "fadsf",
+        "completed": true
+      },
+      {
+        "id": "1773396522146",
+        "text": "dsfdasf",
+        "completed": false
+      },
+      {
+        "id": "1773396523036",
+        "text": "dsf",
+        "completed": false
+      },
+      {
+        "id": "1773561419369",
+        "text": "xcvadf",
+        "completed": false
+      }
+    ],
+    "bucket": null,
+    "createdAt": "2026-03-13T10:08:26.489Z",
+    "updatedAt": "2026-03-15T07:56:59.377Z"
+  },
+  {
+    "id": "436eb438-80fe-40ba-b1c9-5ba66e9ee5ea",
+    "title": "sdfsd",
+    "listType": "work",
+    "dueDate": null,
+    "completed": false,
+    "notes": "",
+    "subtasks": [],
+    "bucket": null,
+    "createdAt": "2026-03-13T10:09:17.624Z",
+    "updatedAt": "2026-03-13T10:09:17.624Z"
+  },
+  {
+    "id": "dd8055b6-3668-4197-87db-291c5f4bd044",
+    "title": "sdfds",
+    "listType": "work",
+    "dueDate": null,
+    "completed": false,
+    "notes": "",
+    "subtasks": [],
+    "bucket": null,
+    "createdAt": "2026-03-13T10:09:18.613Z",
+    "updatedAt": "2026-03-13T10:09:18.613Z"
+  },
+  {
+    "id": "5e5075a1-bb11-472f-b930-df02189870cf",
+    "title": "df",
+    "listType": "groceries",
+    "dueDate": null,
+    "completed": false,
+    "notes": "",
+    "subtasks": [],
+    "bucket": null,
+    "createdAt": "2026-03-13T10:09:31.533Z",
+    "updatedAt": "2026-03-15T08:17:38.533Z"
+  },
+  {
+    "id": "b9ea4ffe-62a2-4f23-9e06-5d568383cf25",
+    "title": "vxcvdds",
+    "listType": "my-day",
+    "dueDate": "2026-03-27",
+    "completed": false,
+    "notes": "",
+    "subtasks": [],
+    "bucket": null,
+    "createdAt": "2026-03-15T07:55:49.153Z",
+    "updatedAt": "2026-03-15T08:24:27.830Z"
+  },
+  {
+    "id": "3a821a72-a984-43af-aace-48f92b80dc03",
+    "title": "ccavvav",
+    "listType": "calendar",
+    "dueDate": "2026-03-18",
+    "completed": false,
+    "notes": "",
+    "subtasks": [],
+    "bucket": null,
+    "createdAt": "2026-03-15T07:56:37.781Z",
+    "updatedAt": "2026-03-15T07:56:37.781Z"
+  },
+  {
+    "id": "606997ca-22dd-4d70-8848-077af4b6d3bd",
+    "title": "http://localhost:5173/all-tasks?tab=analytics",
     "listType": "all-tasks",
     "dueDate": null,
     "completed": false,
     "notes": "",
     "subtasks": [],
     "bucket": "today",
-    "createdAt": "2026-03-13T09:58:43.321Z",
-    "updatedAt": "2026-03-13T09:58:43.321Z"
+    "createdAt": "2026-03-15T08:29:28.178Z",
+    "updatedAt": "2026-03-15T08:29:42.541Z"
   }
 ]

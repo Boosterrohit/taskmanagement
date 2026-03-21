@@ -5,9 +5,7 @@ import type {
   UpdateTaskInput,
 } from "@/types/task";
 
-const API_BASE =
-  import.meta.env.VITE_API_BASE_URL ||
-  (import.meta.env.DEV ? "/api" : "http://localhost:4000/api");
+const API_BASE = import.meta.env.VITE_API_BASE_URL || "/api";
 
 const toQuery = (filters?: TaskFilters) => {
   if (!filters) return "";
