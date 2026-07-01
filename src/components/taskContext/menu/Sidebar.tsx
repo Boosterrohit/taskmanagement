@@ -1,4 +1,4 @@
-import { Plus } from "lucide-react";
+import { Home, Plus } from "lucide-react";
 import { SIDE_BAR_MENU } from "@/data";
 import profile from "../../../assets/profile.png";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -100,10 +100,15 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
         }`}>
         <div className="text-black flex gap-2 ">
           <img src={profile} alt="Profile" className="w-10 h-10 rounded-full inline-block object-cover" />
-          <div className="flex flex-col leading-5 mt-0.5">
+         <div className="flex justify-between w-full">
+           <div className="flex flex-col leading-5 mt-0.5">
             <span>Rohit Sah</span>
             <span className="text-xs text-gray-500">Free Plan</span>
           </div>
+           <Link to="/" title="Back to Home Page" className="md:p-3 block md:hidden p-2.5 rounded-full bg-white shadow-lg border w-fit hover:bg-gray-100 hover:shadow-md transition-all duration-200 text-gray-700">
+        <Home size={18} />
+      </Link>
+         </div>
         </div>
         <div className="overflow-y-auto h-[79vh] hide-scrollbar">
           {SIDE_BAR_MENU.map((item) => {
@@ -145,6 +150,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
             );
           })}
         </div>
+          
         <div onClick={handleAddBoard} className={`text-black absolute bottom-5 border cursor-pointer w-52 left-4 text-sm flex justify-between bg-white shadow-md px-3 py-2 rounded-full items-center gap-2 ${isBoardRoute ? "ring-2 ring-blue-300" : ""}`}>
           <div className="flex">
             <div className="bg-red-400 -mr-2 border-2 border-gray-300 w-8 h-8 rounded-full flex justify-center items-center text-base text-white">R</div>

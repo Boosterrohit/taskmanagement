@@ -2,16 +2,207 @@ import { Button } from "@/components/ui/button";
 import { useTasks } from "@/contexts/taskContext";
 import { useToast } from "@/contexts/toastContext";
 import type { TaskBucket } from "@/types/task";
-import { ChevronRight, Lock, Plus, SquarePen, Trash2, User2 } from "lucide-react";
-import { useMemo, useRef, useState } from "react";
+import { ChevronRight, Lock, Plus, SquarePen, Trash2, User2, Calendar, ChevronLeft } from "lucide-react";
+import { useMemo, useRef, useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useSearchParams } from "react-router-dom";
-
+import noTasks from "../../assets/noTask.jpg";
+import complete from "../../assets/complete.jpg";
+import select from "../../assets/select.jpg";
 const columns: Array<{ key: TaskBucket; title: string; day: string }> = [
   { key: "today", title: "Today", day: "Now" },
   { key: "tomorrow", title: "Tomorrow", day: "Next" },
   { key: "upcoming", title: "Upcoming", day: "Soon" },
   { key: "someday", title: "Someday", day: "Anytime" },
 ];
+
+const WEEKDAYS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+const MONTHS = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+];
+
+// Builds yyyy-mm-dd from local date parts. toISOString() would shift the date
+// by your UTC offset near midnight — this avoids that off-by-one.
+const toIsoDate = (d: Date) => {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+};
+
+const formatDisplayDate = (iso: string) => {
+  if (!iso) return "";
+  const [y, m, d] = iso.split("-").map(Number);
+  const date = new Date(y, m - 1, d);
+  return `${date.getDate()} ${MONTHS[date.getMonth()].slice(0, 3)} ${date.getFullYear()}`;
+};
+
+interface DatePickerProps {
+  value: string; // yyyy-mm-dd or ""
+  onChange: (iso: string) => void;
+  className?: string;
+  pill?: boolean; // pill styling for the kanban column footers vs the default bar style
+}
+
+const PANEL_WIDTH = 288; // matches w-72
+
+const DatePicker = ({ value, onChange, className = "", pill = false }: DatePickerProps) => {
+  const [open, setOpen] = useState(false);
+  const [viewDate, setViewDate] = useState(() => (value ? new Date(value) : new Date()));
+  const [coords, setCoords] = useState<{ left: number; anchorTop: number; anchorBottom: number; openUp: boolean } | null>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  const computePosition = () => {
+    const btn = triggerRef.current;
+    if (!btn) return;
+    const rect = btn.getBoundingClientRect();
+    const spaceAbove = rect.top;
+    const spaceBelow = window.innerHeight - rect.bottom;
+    // Flip to whichever side has more room instead of always assuming "up" —
+    // a hardcoded direction breaks the moment this component is reused in a
+    // different layout (which is exactly what happened going from MyTask to here).
+    const openUp = spaceAbove > 340 || spaceAbove > spaceBelow;
+    let left = rect.left;
+    if (left + PANEL_WIDTH > window.innerWidth - 8) {
+      left = window.innerWidth - PANEL_WIDTH - 8;
+    }
+    if (left < 8) left = 8;
+    setCoords({ left, anchorTop: rect.top, anchorBottom: rect.bottom, openUp });
+  };
+
+  useEffect(() => {
+    if (!open) return;
+    computePosition();
+    // Deliberate simplification: close on scroll instead of tracking position
+    // live. Live-following the trigger through nested scroll containers
+    // (kanban row scrolls horizontally, overview list scrolls vertically)
+    // adds real complexity for a rare interaction — closing is simpler and
+    // avoids a misaligned floating panel.
+    const close = () => setOpen(false);
+    window.addEventListener("scroll", close, true);
+    window.addEventListener("resize", close);
+    return () => {
+      window.removeEventListener("scroll", close, true);
+      window.removeEventListener("resize", close);
+    };
+  }, [open]);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as Node;
+      if (
+        triggerRef.current && !triggerRef.current.contains(target) &&
+        panelRef.current && !panelRef.current.contains(target)
+      ) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    if (open) setViewDate(value ? new Date(value) : new Date());
+  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const year = viewDate.getFullYear();
+  const month = viewDate.getMonth();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const firstWeekday = new Date(year, month, 1).getDay();
+  const todayIso = toIsoDate(new Date());
+
+  const cells: (number | null)[] = [
+    ...Array(firstWeekday).fill(null),
+    ...Array.from({ length: daysInMonth }, (_, i) => i + 1),
+  ];
+
+  const goToMonth = (offset: number) => setViewDate(new Date(year, month + offset, 1));
+
+  const selectDay = (day: number) => {
+    onChange(toIsoDate(new Date(year, month, day)));
+    setOpen(false);
+  };
+
+  return (
+    <>
+      <button
+        ref={triggerRef}
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className={`flex items-center gap-2 h-11 px-3 py-2 border text-left transition-colors ${
+          pill ? "rounded-full" : "rounded-md"
+        } ${value ? "border-gray-300 text-gray-700" : "border-red-300 text-gray-400"} hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400 ${className}`}
+      >
+        <Calendar size={16} className={value ? "text-blue-500 shrink-0" : "text-gray-400 shrink-0"} />
+        <span className="flex-1 truncate text-sm">{value ? formatDisplayDate(value) : "Select date"}</span>
+      </button>
+
+      {open && coords && createPortal(
+        <div
+          ref={panelRef}
+          style={{
+            position: "fixed",
+            left: coords.left,
+            ...(coords.openUp
+              ? { bottom: window.innerHeight - coords.anchorTop + 8 }
+              : { top: coords.anchorBottom + 8 }),
+          }}
+          className="z-[9999] w-72 bg-white rounded-xl shadow-xl border border-gray-200 p-3"
+        >
+          <div className="flex items-center justify-between mb-2">
+            <button type="button" onClick={() => goToMonth(-1)} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500" aria-label="Previous month">
+              <ChevronLeft size={16} />
+            </button>
+            <span className="text-sm font-semibold text-gray-800">{MONTHS[month]} {year}</span>
+            <button type="button" onClick={() => goToMonth(1)} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500" aria-label="Next month">
+              <ChevronRight size={16} />
+            </button>
+          </div>
+
+          <div className="grid grid-cols-7 gap-1 mb-1">
+            {WEEKDAYS.map((wd) => (
+              <div key={wd} className="text-center text-xs font-medium text-gray-400 py-1">{wd}</div>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-7 gap-1">
+            {cells.map((day, idx) => {
+              if (day === null) return <div key={`empty-${idx}`} />;
+              const iso = toIsoDate(new Date(year, month, day));
+              const isSelected = iso === value;
+              const isToday = iso === todayIso;
+              return (
+                <button
+                  type="button"
+                  key={iso}
+                  onClick={() => selectDay(day)}
+                  className={`h-8 w-8 mx-auto flex items-center justify-center text-sm rounded-full transition-colors
+                    ${isSelected ? "bg-blue-500 text-white font-semibold" : "text-gray-700 hover:bg-blue-50"}
+                    ${isToday && !isSelected ? "border border-blue-400 text-blue-600" : ""}`}
+                >
+                  {day}
+                </button>
+              );
+            })}
+          </div>
+
+          {value && (
+            <button
+              type="button"
+              onClick={() => { onChange(""); setOpen(false); }}
+              className="mt-2 w-full text-xs text-gray-400 hover:text-red-500 text-center"
+            >
+              Clear date
+            </button>
+          )}
+        </div>,
+        document.body
+      )}
+    </>
+  );
+};
 
 const AllTasks = () => {
   const [searchParams] = useSearchParams();
@@ -66,13 +257,17 @@ const AllTasks = () => {
   const addOverviewTask = async () => {
     const title = inputTitle.trim();
     if (!title) return;
+    if (!inputDate) {
+      showError("Please select a due date before adding a task");
+      return;
+    }
 
     setIsAddingOverview(true);
     try {
       const created = await addTask({
         title,
         listType: "all-tasks",
-        dueDate: inputDate || null,
+        dueDate: inputDate,
         bucket: "today",
       });
 
@@ -90,13 +285,17 @@ const AllTasks = () => {
   const addBucketTask = async (bucket: TaskBucket) => {
     const title = inputByBucket[bucket].trim();
     if (!title) return;
+    if (!dateByBucket[bucket]) {
+      showError("Please select a due date before adding a task");
+      return;
+    }
 
     setAddingBucket(bucket);
     try {
       await addTask({
         title,
         listType: "all-tasks",
-        dueDate: dateByBucket[bucket] || null,
+        dueDate: dateByBucket[bucket],
         bucket,
       });
 
@@ -154,7 +353,7 @@ const AllTasks = () => {
   };
 
   return (
-    <section>
+    <section className="p-2">
       {/* Edit task dialog */}
       {editTask && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
@@ -184,15 +383,14 @@ const AllTasks = () => {
         </div>
       )}
       {activeTab === "overview" && (
-        <div className="h-[85vh] overflow-auto flex md:flex-row flex-col gap-7">
+        <div className="md:h-[85vh] h-auto overflow-auto flex md:flex-row flex-col gap-7">
           <div className="flex md:w-[80%] md:h-[85vh] min-h-[400px] relative overflow-hidden flex-col gap-4 bg-white shadow-lg p-6 border-2 rounded-xl">
-            <div className="md:h-[68vh] h-[600px] hide-scrollbar overflow-y-scroll">
+            <div className="md:h-[68vh] h-[600px] hide-scrollbar pb-32 overflow-y-scroll">
               <div className="flex items-center justify-between gap-3">
                 <h2 className="text-xl font-bold">All Tasks</h2>
                 <div className="flex items-center gap-2">
                   <button onClick={() => setTaskFilter("pending")} className={`text-xs px-3 py-1 rounded-full border ${taskFilter === "pending" ? "bg-blue-500 text-white border-blue-500" : "text-gray-600"}`}>Pending</button>
                   <button onClick={() => setTaskFilter("completed")} className={`text-xs px-3 py-1 rounded-full border ${taskFilter === "completed" ? "bg-green-500 text-white border-green-500" : "text-gray-600"}`}>Completed</button>
-                  {/* <button onClick={() => setTaskFilter("all")} className={`text-xs px-3 py-1 rounded-full border ${taskFilter === "all" ? "bg-gray-700 text-white border-gray-700" : "text-gray-600"}`}>All</button> */}
                 </div>
               </div>
               {loading ? (
@@ -200,7 +398,25 @@ const AllTasks = () => {
               ) : (
                 <ul className="space-y-3 mt-3">
                   {filteredOverviewTasks.length === 0 && (
-                    <li className="text-sm text-gray-500">No tasks for selected filter.</li>
+                     <div className="flex-1 min-h-0 flex flex-col items-center justify-center text-center px-4 mt-10">
+               {
+                taskFilter === "pending" ? (
+                   <img
+                  src={noTasks}
+                  alt="No tasks"
+                  className="h-auto md:w-full md:max-w-64 w-2/5 opacity-75 object-contain"
+                />
+                ):(
+                   <img
+                  src={complete}
+                  alt="No tasks"
+                  className="h-auto md:w-full md:max-w-64 w-2/5 opacity-75 object-contain"
+                />
+                )}
+               
+                <p className="text-gray-600 md:mt-4 font-bold">No {taskFilter === "pending" ? "Pending" : "Completed"} tasks in My Day.</p>
+                <p className="md:text-sm text-xs md:mt-2.5 text-gray-500">Looks like you're all caught up! <br/>Enjoy your day and stay productive</p>
+              </div>
                   )}
                   {filteredOverviewTasks.map((task) => (
                     <li
@@ -243,20 +459,15 @@ const AllTasks = () => {
                   value={inputTitle}
                   onChange={(e) => setInputTitle(e.target.value)}
                   placeholder="Add task..."
-                  className="rounded-md h-11  px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="rounded-md h-11  px-3 py-2 w-full border focus:outline-none focus:ring-2 focus:ring-blue-500"
                   onKeyDown={(e) => e.key === "Enter" && addOverviewTask()}
                 />
                <div className="flex items-center justify-between gap-2">
-                 <input
-                  type="date"
-                  value={inputDate}
-                  onChange={(e) => setInputDate(e.target.value)}
-                  className="rounded-md h-11 px-3 py-2 border w-full md:w-52"
-                />
+                 <DatePicker value={inputDate} onChange={setInputDate} className="w-full md:w-72" />
                 <button
                   onClick={addOverviewTask}
-                  disabled={isAddingOverview || !inputTitle.trim()}
-                  className="bg-blue-500 w-full text-white px-4 py-2 rounded-full hover:bg-blue-600 transition-colors duration-200 flex items-center justify-center"
+                  disabled={isAddingOverview || !inputTitle.trim() || !inputDate}
+                  className="bg-blue-500 text-white px-4 py-2 rounded-full w-24 hover:bg-blue-600 transition-colors duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Plus size={20} />{isAddingOverview ? "Adding..." : "Add"}
                 </button>
@@ -308,7 +519,19 @@ const AllTasks = () => {
                 </div>
               </>
             ) : (
-              <p className="text-gray-500">Select a task to see details.</p>
+              <div>
+                <p className="text-gray-700 font-semibold">Select a task to see details.</p>
+                <p className="text-sm text-gray-400 py-1">Choose a task from the list to view its <br/> information and updates here.</p>
+                <div className="flex flex-col items-center justify-center mt-10">
+                   <img
+                  src={select}
+                  alt="Task Details"
+                  className="h-auto md:w-full md:max-w-64 w-2/5 opacity-90 -mt-5 object-contain"
+                />
+                <p className="text-gray-600 font-semibold my-1 text-sm mt-3">No task selected yet.</p>
+                <p className="text-gray-400 text-center text-sm">Please select a task to see its details, <br/>comments, and activity.</p>
+                </div>
+              </div>
             )}
 
             <div className="absolute bottom-5 w-full left-0 px-6 md:grid hidden grid-cols-3 gap-3">
@@ -334,7 +557,7 @@ const AllTasks = () => {
           {columns.map((column) => (
             <div
               key={column.key}
-              className={`bg-white shadow-lg min-h-[500px] w-[350px] shrink-0 flex flex-col p-5 rounded-3xl transition-all duration-200 ${
+              className={`bg-white shadow-lg min-h-[550px] w-[350px] shrink-0 flex flex-col p-5 rounded-3xl transition-all duration-200 ${
                 dragOverCol === column.key ? "ring-2 ring-blue-400 bg-blue-50" : ""
               }`}
               onDragOver={(e) => {
@@ -344,13 +567,13 @@ const AllTasks = () => {
               onDragLeave={() => setDragOverCol(null)}
               onDrop={() => onDrop(column.key)}
             >
-              <div className="flex-1 overflow-y-auto">
+              <div className="flex-1 overflow-y-auto  ">
                 <p className="flex gap-2 items-center mb-2">
                   <span className="text-xl font-bold text-black">{column.title}</span>
                   <span className="text-xl font-bold text-gray-300">{column.day}</span>
                 </p>
 
-                <ul className="space-y-3">
+                <ul className="space-y-3  max-h-[400px] h-[350px] overflow-y-auto hide-scrollbar rounded-xl">
                   {tasksByBucket[column.key].length === 0 && (
                     <li className="text-center text-gray-300 text-sm py-8 border-2 border-dashed rounded-2xl">
                       Drop tasks here
@@ -361,7 +584,7 @@ const AllTasks = () => {
                       key={task.id}
                       draggable
                       onDragStart={() => onDragStart(task.id, column.key)}
-                      className="bg-white border shadow-md p-3 rounded-xl cursor-grab active:cursor-grabbing hover:shadow-lg transition-shadow duration-200 select-none"
+                      className="bg-white border shadow-md p-3 rounded-xl  cursor-grab active:cursor-grabbing hover:shadow-lg transition-shadow duration-200 select-none"
                     >
                       <div className="flex items-center justify-between mb-1">
                         <span className="flex items-center gap-0.5 text-gray-400 text-xs">
@@ -403,17 +626,17 @@ const AllTasks = () => {
                   />
                   <button
                     onClick={() => addBucketTask(column.key)}
-                    disabled={addingBucket === column.key || !inputByBucket[column.key].trim()}
-                    className="absolute right-1.5 bg-blue-500 text-white px-3 py-1.5 rounded-full hover:bg-blue-600 transition-colors duration-200 flex items-center gap-1 text-sm"
+                    disabled={addingBucket === column.key || !inputByBucket[column.key].trim() || !dateByBucket[column.key]}
+                    className="absolute right-1.5 bg-blue-500 text-white px-3 py-1.5 rounded-full hover:bg-blue-600 transition-colors duration-200 flex items-center gap-1 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <Plus size={16} />{addingBucket === column.key ? "Adding..." : "Add"}
                   </button>
                 </div>
-                <input
-                  type="date"
+                <DatePicker
                   value={dateByBucket[column.key]}
-                  onChange={(e) => setDateByBucket((prev) => ({ ...prev, [column.key]: e.target.value }))}
-                  className="w-full text-sm border rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 text-gray-500 cursor-pointer"
+                  onChange={(iso) => setDateByBucket((prev) => ({ ...prev, [column.key]: iso }))}
+                  className="w-full"
+                  pill
                 />
               </div>
             </div>

@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import logo from '../../assets/logo.png'
+import { Github, Linkedin, Twitter} from 'lucide-react'
 
 export function Footer() {
   return (
@@ -51,22 +52,26 @@ export function Footer() {
             <h4 className="text-gray-900 font-semibold text-sm uppercase tracking-wide">
               Connect
             </h4>
-            <div className="flex gap-3">
-              {[
-                { label: 'X', title: 'Follow on X' },
-                { label: 'GH', title: 'GitHub' },
-                { label: 'LI', title: 'LinkedIn' },
-              ].map((social) => (
-                <a
-                  key={social.label}
-                  href="#"
-                  title={social.title}
-                  className="w-10 h-10 rounded-lg bg-white border border-gray-200 flex items-center justify-center text-gray-600 hover:text-blue-600 hover:border-blue-300 transition-all duration-200"
-                >
-                  <span className="text-xs font-bold">{social.label}</span>
-                </a>
-              ))}
-            </div>
+           <div className="flex gap-3">
+  {[
+    { icon: Twitter, title: "Follow on X", href: "#" },
+    { icon: Github, title: "GitHub", href: "#" },
+    { icon: Linkedin, title: "LinkedIn", href: "#" },
+  ].map((social) => {
+    const Icon = social.icon;
+
+    return (
+      <a
+        key={social.title}
+        href={social.href}
+        title={social.title}
+        className="w-10 h-10 rounded-lg bg-white border border-gray-200 flex items-center justify-center text-gray-600 hover:text-blue-600 hover:border-blue-300 transition-all duration-200"
+      >
+        <Icon className="w-5 h-5" />
+      </a>
+    );
+  })}
+</div>
             <p className="text-gray-400 text-xs">
               Made with care for productive people.
             </p>

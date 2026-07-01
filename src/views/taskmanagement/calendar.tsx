@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight, Plus, SquarePen, Trash2 } from "lucide-react";
 import { useTasks } from "@/contexts/taskContext";
 import { useToast } from "@/contexts/toastContext";
+import complete from "../../assets/noTask.jpg";
 
 const WEEK_DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -303,14 +304,21 @@ const Calendar = () => {
                   <p className="text-xs text-red-600 mt-1">Public Holiday: {PUBLIC_HOLIDAYS[formatKey(selectedDate)]}</p>
                 )}
               </div>
-              <button onClick={handleCloseDialog} className="text-xs text-gray-500 hover:text-gray-700">
+              <button onClick={handleCloseDialog} className="text-xs p-1 text-white hover:text-red-700 bg-red-600/50  rounded-full transition-colors">
                 Close
               </button>
             </div>
 
             <div className="space-y-2 max-h-40 overflow-y-auto">
               {selectedTasks.length === 0 ? (
-                <p className="text-xs text-gray-400">No tasks for this day yet.</p>
+                <div className="flex-1 min-h-0 flex flex-col items-center justify-center text-center px-4">
+                <img
+                  src={complete}
+                  alt="No tasks"
+                  className="h-auto md:w-full md:max-w-32 w-2/5 opacity-75 object-contain"
+                />
+                <p className="text-gray-600 md:mt-4 font-bold">No tasks yet.</p>
+              </div>
               ) : (
                 selectedTasks.map((task) => (
                   <div

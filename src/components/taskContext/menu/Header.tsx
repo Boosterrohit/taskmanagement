@@ -1,8 +1,8 @@
-import { List, Menu, Notebook, RefreshCcw, User2, X } from "lucide-react"
+import { Home, List, Menu, Notebook, RefreshCcw, User2, X } from "lucide-react"
 import profile from "../../../assets/profile.png"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useState } from "react";
-import { useLocation, useSearchParams } from "react-router-dom";
+import { Link, useLocation, useSearchParams } from "react-router-dom";
 interface HeaderProps {
   isSidebarOpen: boolean;
   toggleSidebar: () => void;
@@ -43,7 +43,12 @@ const Header = ({ isSidebarOpen, toggleSidebar }: HeaderProps) => {
         </button>
         
       </div>
-      <div className="bg-white md:w-fit w-[616px]  px-3 py-2 flex justify-between items-center shadow-lg border rounded-full">
+      
+      <div className="flex items-center gap-2">
+          <Link to="/" title="Back to Home Page" className="md:p-3 hidden md:block p-2 rounded-full bg-white shadow-lg border hover:bg-gray-100 hover:shadow-md transition-all duration-200 text-gray-700">
+        <Home size={20} />
+      </Link>
+        <div className="bg-white md:w-fit w-[250px]  px-3 py-2 flex justify-between items-center shadow-lg border rounded-full">
 <div className="flex items-center gap-1 text-gray-700">
   <Notebook size={20}/>
 {/* <p className="md:flex hidden text-lg font-bold">All My Tasks</p> */}
@@ -66,6 +71,8 @@ const Header = ({ isSidebarOpen, toggleSidebar }: HeaderProps) => {
   <RefreshCcw size={18} className={`text-gray-500 cursor-pointer hover:text-blue-500 ${isRotating ? "animate-rotate-reverse" : ""}`}
   onClick={handleRefresh}/>
 </div>
+      </div>
+    
       </div>
 
       <div className="w-48 text-center  md:bg-white md:px-3 py-2.5 md:shadow-lg md:border rounded-full flex items-center justify-center">
